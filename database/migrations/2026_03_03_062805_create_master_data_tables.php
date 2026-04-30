@@ -58,7 +58,6 @@ return new class extends Migration {
             $table->date('date');
             $table->foreignId('distributor_id')->constrained();
             $table->string('account_type'); // GT/MT
-            $table->string('channel'); // Direct/Indirect
             $table->foreignId('outlet_id')->constrained();
             $table->foreignId('brand_id')->constrained();
             $table->foreignId('product_id')->constrained();

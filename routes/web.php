@@ -4,26 +4,34 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Shared Dashboard or BA Dashboard
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
-    // BA Specific Routes
-    Route::middleware(['role:ba'])->group(function () {
+    // BA & Viewer Specific Routes
+    Route::middleware(['role:admin,ba,rbs,view user only'])->group(function () {
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
-        Route::get('/reports/create', [\App\Http\Controllers\ReportController::class, 'create'])->name('reports.create');
-        Route::post('/reports', [\App\Http\Controllers\ReportController::class, 'store'])->name('reports.store');
-        Route::get('/reports/{report}/edit', [\App\Http\Controllers\ReportController::class, 'edit'])->name('reports.edit');
-        Route::patch('/reports/{report}', [\App\Http\Controllers\ReportController::class, 'update'])->name('reports.update');
-        Route::delete('/reports/{report}', [\App\Http\Controllers\ReportController::class, 'destroy'])->name('reports.destroy');
+        Route::get('/reports/export', [\App\Http\Controllers\ReportController::class, 'export'])->name('reports.export');
+        
+        Route::middleware(['role:ba'])->group(function () {
+            Route::get('/reports/create', [\App\Http\Controllers\ReportController::class, 'create'])->name('reports.create');
+            Route::post('/reports', [\App\Http\Controllers\ReportController::class, 'store'])->name('reports.store');
+            Route::get('/reports/{report}/edit', [\App\Http\Controllers\ReportController::class, 'edit'])->name('reports.edit');
+            Route::patch('/reports/{report}', [\App\Http\Controllers\ReportController::class, 'update'])->name('reports.update');
+            Route::delete('/reports/{report}', [\App\Http\Controllers\ReportController::class, 'destroy'])->name('reports.destroy');
+        });
+
+        // Check-in & Check-out hanya untuk role BA
+        Route::middleware(['role:ba'])->group(function () {
+            Route::get('/attendance/create', [\App\Http\Controllers\AttendanceController::class, 'create'])->name('attendance.create');
+            Route::post('/attendance', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('attendance.store');
+        });
 
         // Attendance Routes
         Route::get('/attendance', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendance.index');
-        Route::get('/attendance/create', [\App\Http\Controllers\AttendanceController::class, 'create'])->name('attendance.create');
-        Route::post('/attendance', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('attendance.store');
         Route::get('/attendance/{attendance}', [\App\Http\Controllers\AttendanceController::class, 'show'])->name('attendance.show');
 
         // Attendance Request Routes
@@ -35,33 +43,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reports/{report}', [\App\Http\Controllers\ReportController::class, 'show'])->name('reports.show');
 
     // API helpers for dropdowns (Shared for BA and Admin)
-    Route::get('/api/provinces/{distributor}', function (\App\Models\Distributor $distributor) {
-        return \App\Models\Province::whereHas('cities.outlets.users', function ($q) use ($distributor) {
-            $q->where('distributor_id', $distributor->id)->where('role', 'ba');
-        })->orderBy('name')->get();
+    Route::get('/api/provinces', function () {
+        return \App\Models\Province::orderBy('name')->get();
     });
+
     Route::get('/api/cities/{province}', function (\App\Models\Province $province) {
-        $user = auth()->user();
-        if ($user->role === 'ba') {
-            return $user->outlets()
-                ->whereHas('city', fn($q) => $q->where('province_id', $province->id))
-                ->get()
-                ->pluck('city')
-                ->unique('id')
-                ->sortBy('name')
-                ->values();
-        }
         return $province->cities()->orderBy('name')->get();
     });
+
+    Route::get('/api/users/{user}/data', function (\App\Models\User $user) {
+        return [
+            'outlets' => $user->outlets()->orderBy('name')->get(),
+            'distributor' => $user->distributor
+        ];
+    });
+
+    Route::get('/api/distributors/{distributor}/bas', function (\App\Models\Distributor $distributor) {
+        return \App\Models\User::where('role', 'ba')->where('distributor_id', $distributor->id)->orderBy('name')->get();
+    });
+
+    Route::get('/api/bas/all', function () {
+        return \App\Models\User::where('role', 'ba')->orderBy('name')->get();
+    });
+
     Route::get('/api/products/{brand}', function (\App\Models\Brand $brand) {
         return $brand->products()->orderBy('name')->get();
-    });
-    Route::get('/api/outlets/{city}', function (\App\Models\City $city) {
-        $user = auth()->user();
-        if ($user->role === 'ba') {
-            return $user->outlets()->where('city_id', $city->id)->orderBy('name')->get();
-        }
-        return $city->outlets()->orderBy('name')->get();
     });
 
     // Admin Specific Routes
@@ -75,6 +81,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('distributors', \App\Http\Controllers\Master\DistributorController::class);
         Route::resource('provinces', \App\Http\Controllers\Master\ProvinceController::class);
         Route::resource('cities', \App\Http\Controllers\Master\CityController::class);
+        Route::resource('regions', \App\Http\Controllers\Master\RegionController::class);
+        Route::resource('areas', \App\Http\Controllers\Master\AreaController::class);
         Route::resource('outlets', \App\Http\Controllers\Master\OutletController::class);
         // User Management
         Route::patch('users/{user}/toggle', [\App\Http\Controllers\Admin\UserController::class, 'toggle'])->name('users.toggle');

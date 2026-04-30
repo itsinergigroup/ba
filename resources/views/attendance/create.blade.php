@@ -280,6 +280,16 @@
                             </div>
 
                             <div class="flex flex-col gap-4 mt-10">
+                                @if($nextType === 'check-out' && $durationStatus === 'blocked')
+                                    <div class="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-400 rounded-xl">
+                                        <p class="font-bold flex items-center gap-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            Waktu Kerja Belum Terpenuhi
+                                        </p>
+                                        <p class="text-sm mt-1">Anda harus bekerja minimal {{ $minHours }} jam sebelum bisa melakukan check-out. Sisa waktu: <strong>{{ floor($remainingMinutes / 60) }} jam {{ $remainingMinutes % 60 }} menit</strong>.</p>
+                                    </div>
+                                @endif
+
                                 <button type="submit" id="submitBtn" disabled
                                     class="w-full py-5 bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/30 text-white rounded-2xl font-black text-lg disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 dark:shadow-none transform hover:-translate-y-1 active:scale-95 transition-all duration-300">
                                     <div class="flex items-center justify-center gap-3">
@@ -561,7 +571,13 @@
             function checkReady() {
                 const hasPhoto = document.getElementById('photoData').value !== "";
                 const hasLocation = document.getElementById('latitude').value !== "";
-                submitBtn.disabled = !(hasPhoto && hasLocation);
+                let isBlocked = false;
+                
+                @if($nextType === 'check-out' && $durationStatus === 'blocked')
+                    isBlocked = true;
+                @endif
+
+                submitBtn.disabled = !(hasPhoto && hasLocation) || isBlocked;
             }
 
             // Auto-trigger if permissions allowed

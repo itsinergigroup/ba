@@ -76,24 +76,6 @@
                                 <div class="pb-6 border-b border-gray-50 dark:border-gray-700">
                                     <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Waktu Check</div>
                                     <div class="text-4xl font-black text-indigo-600 mb-2">{{ date('H:i', strtotime($attendance->time)) }}</div>
-                                    @if($attendance->late_minutes > 0 && $attendance->type === 'check-in')
-                                        <div class="space-y-2">
-                                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-50 text-red-600 rounded-lg text-[10px] font-black uppercase">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                                Terlambat 
-                                                @php $h = floor($attendance->late_minutes / 60); $m = $attendance->late_minutes % 60; @endphp
-                                                {{ $h > 0 ? $h . ' Jam ' : '' }}{{ $m > 0 ? $m . ' Menit' : '' }}
-                                            </div>
-                                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                                Batas Masuk: {{ \App\Models\Setting::getValue('check_in_limit', '08:00') }} WIB
-                                            </div>
-                                        </div>
-                                    @elseif($attendance->type === 'check-in')
-                                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-lg text-[10px] font-black uppercase">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                                            Tepat Waktu
-                                        </div>
-                                    @endif
                                 </div>
                                 
                                 <div>
@@ -126,6 +108,28 @@
                                 <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
                                     <div class="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Koordinat GPS</div>
                                     <div class="text-xs font-mono font-bold text-gray-600 dark:text-gray-400">{{ $attendance->latitude }}, {{ $attendance->longitude }}</div>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+                                        <div class="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Sumber Data</div>
+                                        <div class="flex items-center gap-2">
+                                            @if($attendance->attendance_request_id)
+                                                <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-black uppercase rounded">Pengajuan Manual</span>
+                                            @else
+                                                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase rounded">Sistem (Aplikasi)</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    @if($attendance->attendanceRequest)
+                                        <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+                                            <div class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Keterangan (Alasan)</div>
+                                            <p class="text-xs text-indigo-700 dark:text-indigo-300 font-medium leading-relaxed italic">
+                                                "{{ $attendance->attendanceRequest->reason }}"
+                                            </p>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>

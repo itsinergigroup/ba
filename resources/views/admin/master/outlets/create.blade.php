@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                 @if(session('error'))
                     <div class="mb-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 shadow-sm rounded-r-lg flex items-center gap-3 animate-fade-in" role="alert">
@@ -28,25 +28,22 @@
                     </div>
 
                     <div class="mb-4">
-                        <x-input-label for="province_id" :value="__('Provinsi')" />
-                        <select id="province_id" name="province_id"
-                            class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                            required onchange="fetchCities(this.value)">
-                            <option value="">-- Pilih Provinsi --</option>
-                            @foreach($provinces as $prov)
-                                <option value="{{ $prov->id }}">{{ $prov->name }}</option>
+                        <x-input-label for="area_id" :value="__('Area')" />
+                        <select id="area_id" name="area_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
+                            <option value="">{{ __('Pilih Area') }}</option>
+                            @foreach($areas as $area)
+                                <option value="{{ $area->id }}" {{ old('area_id') == $area->id ? 'selected' : '' }}>
+                                    {{ $area->name }}
+                                </option>
                             @endforeach
                         </select>
+                        <x-input-error :messages="$errors->get('area_id')" class="mt-2" />
                     </div>
 
                     <div class="mb-4">
-                        <x-input-label for="city_id" :value="__('Kota')" />
-                        <select id="city_id" name="city_id"
-                            class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                            required>
-                            <option value="">-- Pilih Kota --</option>
-                        </select>
-                        <x-input-error :messages="$errors->get('city_id')" class="mt-2" />
+                        <x-input-label for="address" :value="__('Alamat')" />
+                        <x-text-input id="address" class="block mt-1 w-full" type="text" name="address" :value="old('address')" required />
+                        <x-input-error :messages="$errors->get('address')" class="mt-2" />
                     </div>
 
                     <div class="flex items-center justify-end mt-6">
@@ -61,23 +58,5 @@
         </div>
     </div>
 
-    <script>
-        async function fetchCities(provinceId) {
-            const citySelect = document.getElementById('city_id');
-            citySelect.innerHTML = '<option value="">-- Memuat... --</option>';
 
-            if (!provinceId) {
-                citySelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
-                return;
-            }
-
-            const response = await fetch(`/api/cities/${provinceId}`);
-            const cities = await response.json();
-
-            citySelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
-            cities.forEach(city => {
-                citySelect.innerHTML += `<option value="${city.id}">${city.name}</option>`;
-            });
-        }
-    </script>
 </x-app-layout>

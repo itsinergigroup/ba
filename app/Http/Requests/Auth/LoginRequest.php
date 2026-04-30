@@ -54,7 +54,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => __('Gagal masuk, Akun ini telah dinonaktifkan oleh administrator.'),
+                'email' => __('Gagal masuk. Akun Anda telah dinonaktifkan. Silakan hubungi administrator.'),
             ]);
         }
 

@@ -31,8 +31,7 @@ class AttendanceRequestController extends Controller
      */
     public function create()
     {
-        $outlets = auth()->user()->outlets;
-        return view('attendance.request.create', compact('outlets'));
+        return view('attendance.request.create');
     }
 
     /**
@@ -40,21 +39,33 @@ class AttendanceRequestController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'outlet_id' => 'nullable|exists:outlets,id',
-            'type' => 'required|in:check-in,check-out',
-            'date' => 'required|date|before_or_equal:today',
-            'time' => 'required',
+        $rules = [
+            'type' => 'required|in:check-in,check-out,day-off',
             'reason' => 'required|string|min:10',
-        ]);
+            'photo' => 'required_if:type,check-in,check-out|image|max:2048',
+        ];
+
+        if ($request->type === 'day-off') {
+            $rules['date'] = 'required|date';
+        } else {
+            $rules['date'] = 'required|date|before_or_equal:today';
+            $rules['time'] = 'required';
+        }
+
+        $request->validate($rules);
+
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('attendance_requests', 'public');
+        }
 
         $attendanceRequest = AttendanceRequest::create([
             'user_id' => auth()->id(),
-            'outlet_id' => $request->outlet_id,
             'type' => $request->type,
             'date' => $request->date,
-            'time' => $request->time,
+            'time' => $request->time ?? '00:00:00',
             'reason' => $request->reason,
+            'photo_path' => $photoPath,
             'status' => 'pending',
         ]);
 
@@ -62,7 +73,7 @@ class AttendanceRequestController extends Controller
         $admins = User::where('role', 'admin')->get();
         Notification::send($admins, new AttendanceRequestSubmitted($attendanceRequest));
 
-        return redirect()->route('attendance.request.index')->with('success', 'Pengajuan absen ulang berhasil dikirim. Mohon tunggu persetujuan admin.');
+        return redirect()->route('attendance.request.index')->with('success', 'Pengajuan berhasil dikirim. Mohon tunggu persetujuan admin.');
     }
 
     /**
@@ -100,7 +111,15 @@ class AttendanceRequestController extends Controller
             'admin_note' => $request->admin_note,
         ]);
 
-        if ($request->status === 'approved') {
+        if ($request->status === 'approved' && $attendanceRequest->type !== 'day-off') {
+            // Copy the photo to attendances directory
+            $newPhotoPath = 'manual_insertion.jpg';
+            if ($attendanceRequest->photo_path) {
+                $filename = basename($attendanceRequest->photo_path);
+                $newPhotoPath = 'attendances/' . $filename;
+                \Storage::disk('public')->copy($attendanceRequest->photo_path, $newPhotoPath);
+            }
+
             // Create the real attendance record
             Attendance::create([
                 'user_id' => $attendanceRequest->user_id,
@@ -108,7 +127,7 @@ class AttendanceRequestController extends Controller
                 'type' => $attendanceRequest->type,
                 'latitude' => 0, // Manual insertion doesn't have GPS
                 'longitude' => 0,
-                'photo_path' => 'manual_insertion.jpg', // Placeholder
+                'photo_path' => $newPhotoPath,
                 'status' => 'present',
                 'date' => $attendanceRequest->date,
                 'time' => $attendanceRequest->time,

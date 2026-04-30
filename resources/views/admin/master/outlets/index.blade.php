@@ -11,8 +11,15 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-12" x-data="{ 
+        selectedOutlet: {
+            name: '',
+            area: '',
+            region: '',
+            address: ''
+        }
+    }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             @if(session('success'))
                 <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 shadow-sm rounded-r-lg flex items-center gap-3 animate-fade-in"
                     role="alert">
@@ -121,7 +128,10 @@
                                         Detail Toko</th>
                                     <th
                                         class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
-                                        Lokasi Wilayah</th>
+                                        Area</th>
+                                    <th
+                                        class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+                                        Alamat</th>
                                     <th
                                         class="py-4 px-8 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 text-right">
                                         Manajemen Aksi</th>
@@ -158,31 +168,34 @@
                                             </div>
                                         </td>
                                         <td class="py-5 px-6">
-                                            <div class="flex flex-col gap-1.5">
-                                                <div class="flex items-center gap-2">
-                                                    <span
-                                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
-                                                        {{ $outlet->city->name }}
-                                                    </span>
-                                                </div>
-                                                <div
-                                                    class="flex items-center gap-1.5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                                                        </path>
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    </svg>
-                                                    <span
-                                                        class="text-[11px] font-medium tracking-tight">{{ $outlet->city->province->name }}</span>
-                                                </div>
-                                            </div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                {{ $outlet->area->name ?? '-' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-5 px-6 text-sm text-gray-600 dark:text-gray-400">
+                                            {{ $outlet->address ?? '-' }}
                                         </td>
                                         <td class="py-5 px-8">
                                             <div class="flex justify-end items-center gap-2">
+                                                <button type="button"
+                                                    @click="selectedOutlet = { 
+                                                        name: '{{ addslashes($outlet->name) }}', 
+                                                        area: '{{ $outlet->area->name ?? '-' }}', 
+                                                        region: '{{ $outlet->area->region->name ?? '-' }}', 
+                                                        address: '{{ addslashes($outlet->address ?? '-') }}' 
+                                                    }; $dispatch('open-modal', 'show-outlet-modal')"
+                                                    class="p-2 text-emerald-600 hover:bg-emerald-600 hover:text-white dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg transition-all shadow-sm border border-emerald-100 dark:border-emerald-900/50"
+                                                    title="Lihat Detail">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                </button>
                                                 <a href="{{ route('admin.outlets.edit', $outlet->id) }}"
                                                     class="p-2 text-indigo-600 hover:bg-indigo-600 hover:text-white dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-all shadow-sm border border-indigo-100 dark:border-indigo-900/50"
                                                     title="Ubah Data">
@@ -194,29 +207,12 @@
                                                         </path>
                                                     </svg>
                                                 </a>
-                                                <form action="{{ route('admin.outlets.destroy', $outlet->id) }}"
-                                                    method="POST"
-                                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus toko {{ $outlet->name }}?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="p-2 text-red-600 hover:bg-red-600 hover:text-white dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg transition-all shadow-sm border border-red-100 dark:border-red-900/50"
-                                                        title="Hapus Data">
-                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                            viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1v3M4 7h16">
-                                                            </path>
-                                                        </svg>
-                                                    </button>
-                                                </form>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="py-24 text-center">
+                                        <td colspan="5" class="py-24 text-center">
                                             <div class="flex flex-col items-center gap-4">
                                                 <div
                                                     class="w-20 h-20 bg-gray-50 dark:bg-gray-900/50 rounded-full flex items-center justify-center text-gray-200 dark:text-gray-800">
@@ -252,6 +248,59 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Modal Show Outlet -->
+        <x-modal name="show-outlet-modal" focusable>
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.name"></h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Detail Informasi Outlet</p>
+                        </div>
+                    </div>
+                    <button @click="$dispatch('close')" class="text-gray-400 hover:text-gray-500 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Nama Outlet</label>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.name"></p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Area</label>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.area"></p>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Region</label>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.region"></p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Alamat</label>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.address"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10 flex justify-end">
+                    <x-secondary-button @click="$dispatch('close')">
+                        Tutup
+                    </x-secondary-button>
+                </div>
+            </div>
+        </x-modal>
     </div>
     </div>
     </div>

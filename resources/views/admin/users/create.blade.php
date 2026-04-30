@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -29,14 +29,91 @@
                         <x-input-label for="role" :value="__('Peran')" />
                         <select id="role" name="role"
                             class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                            required onchange="toggleDistributor(this.value)">
+                            required onchange="toggleFields(this.value)">
                             <option value="ba" {{ old('role') == 'ba' ? 'selected' : '' }}>Beauty Advisor (BA)</option>
+                            <option value="rbs" {{ old('role') == 'rbs' ? 'selected' : '' }}>RBS</option>
+                            <option value="view user only" {{ old('role') == 'view user only' ? 'selected' : '' }}>View User Only</option>
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
                         <x-input-error :messages="$errors->get('role')" class="mt-2" />
                     </div>
 
-                    <div id="distributor_group" class="mt-4 {{ old('role') == 'admin' ? 'hidden' : '' }}">
+                    <!-- NEW FIELDS: Cluster, Region, RBS, Area -->
+                    <div id="hierarchy_fields" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <x-input-label for="cluster" :value="__('Cluster')" />
+                            <select id="cluster" name="cluster" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <option value="">-- Pilih Cluster --</option>
+                                <option value="A" {{ old('cluster') == 'A' ? 'selected' : '' }}>A</option>
+                                <option value="B" {{ old('cluster') == 'B' ? 'selected' : '' }}>B</option>
+                                <option value="Area" {{ old('cluster') == 'Area' ? 'selected' : '' }}>Area</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('cluster')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="region" :value="__('Region')" />
+                            <select id="region" name="region" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <option value="">-- Pilih Region --</option>
+                                @foreach($regions as $reg)
+                                    <option value="{{ $reg->name }}" {{ old('region') == $reg->name ? 'selected' : '' }}>{{ $reg->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('region')" class="mt-2" />
+                        </div>
+                        <div class="md:col-span-2">
+                            <x-input-label for="rbs_id" :value="__('RBS (Atasan)')" />
+                            <select id="rbs_id" name="rbs_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <option value="">-- Pilih RBS --</option>
+                                @foreach($rbsUsers as $rbs)
+                                    <option value="{{ $rbs->id }}" {{ old('rbs_id') == $rbs->id ? 'selected' : '' }}>{{ $rbs->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('rbs_id')" class="mt-2" />
+                        </div>
+                    </div>
+
+                    <div id="area_group" class="mt-4">
+                        <x-input-label for="areas" :value="__('Area')" />
+                        @php 
+                            $selectedAreas = old('areas', []);
+                            $areaOptions = $areas->map(fn($a) => $a->name)->toArray();
+                        @endphp
+                        <div x-data="{ 
+                            openArea: false, 
+                            searchArea: '',
+                            selectedAreas: {{ json_encode($selectedAreas) }},
+                            areaOptions: {{ json_encode($areaOptions) }},
+                            get filteredAreas() {
+                                if (this.searchArea === '') return this.areaOptions;
+                                return this.areaOptions.filter(a => a.toLowerCase().includes(this.searchArea.toLowerCase()));
+                            }
+                        }" class="relative mt-2">
+                            <button @click="openArea = !openArea" type="button" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm pl-3 pr-10 py-2.5 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700 dark:text-gray-300 sm:text-sm">
+                                <span class="block truncate" x-text="selectedAreas.length > 0 ? selectedAreas.length + ' Area dipilih' : '-- Pilih Area --'"></span>
+                                <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </span>
+                            </button>
+                            <div x-show="openArea" @click.away="openArea = false" style="display: none;" class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                                <div class="p-2 border-b dark:border-gray-700">
+                                    <input type="text" x-model="searchArea" placeholder="Cari area..." class="w-full text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div class="max-h-60 overflow-auto">
+                                    <template x-for="area in filteredAreas" :key="area">
+                                        <label class="relative flex items-center py-2 px-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                            <input type="checkbox" name="areas[]" :value="area" x-model="selectedAreas" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded shadow-sm">
+                                            <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300" x-text="area"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <x-input-error :messages="$errors->get('areas')" class="mt-2" />
+                    </div>
+
+                    <div id="distributor_group" class="mt-4 {{ in_array(old('role'), ['admin', 'rbs']) ? 'hidden' : '' }}">
                         <x-input-label for="distributor_id" :value="__('Distributor')" />
                         <select id="distributor_id" name="distributor_id"
                             class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
@@ -48,15 +125,20 @@
                         <x-input-error :messages="$errors->get('distributor_id')" class="mt-2" />
                     </div>
 
-                    <div id="outlet_group" class="mt-4 {{ old('role') == 'admin' ? 'hidden' : '' }}">
+                    <div id="outlet_group" class="mt-4 {{ in_array(old('role'), ['admin', 'rbs']) ? 'hidden' : '' }}">
                         <x-input-label for="outlets" :value="__('Tugaskan Toko')" />
                         @php 
                             $selectedOutlets = array_map('strval', old('outlets', [])); 
                         @endphp
                         <div x-data="{ 
                             open: false, 
+                            search: '',
                             selected: {{ json_encode($selectedOutlets) }},
-                            outlets: {{ json_encode(\App\Models\Outlet::all()->map(fn($o) => ['id' => strval($o->id), 'name' => $o->name])) }}
+                            outlets: {{ json_encode(\App\Models\Outlet::orderBy('name')->get()->map(fn($o) => ['id' => strval($o->id), 'name' => $o->name])) }},
+                            get filteredOutlets() {
+                                if (this.search === '') return this.outlets;
+                                return this.outlets.filter(o => o.name.toLowerCase().includes(this.search.toLowerCase()));
+                            }
                         }" class="relative mt-2">
                             
                             <!-- Dropdown Button -->
@@ -77,10 +159,13 @@
                                 x-transition:leave="transition ease-in duration-75"
                                 x-transition:leave-start="transform opacity-100 scale-100"
                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                                
-                                <template x-for="outlet in outlets" :key="outlet.id">
-                                    <label class="relative flex items-center py-2 px-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                                <div class="p-2 border-b dark:border-gray-700">
+                                    <input type="text" x-model="search" placeholder="Cari toko..." class="w-full text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div class="max-h-60 overflow-auto">
+                                    <template x-for="outlet in filteredOutlets" :key="outlet.id">
+                                        <label class="relative flex items-center py-2 px-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <div class="flex items-center h-5">
                                             <input type="checkbox" name="outlets[]" :value="outlet.id" 
                                                 x-model="selected"
@@ -90,10 +175,11 @@
                                             <span class="font-medium text-gray-700 dark:text-gray-300" x-text="outlet.name"></span>
                                         </div>
                                     </label>
-                                </template>
-                                
-                                <div x-show="outlets.length === 0" class="py-2 px-3 text-sm text-gray-500 italic">
-                                    Tidak ada toko yang tersedia
+                                    </template>
+                                    
+                                    <div x-show="filteredOutlets.length === 0" class="py-2 px-3 text-sm text-gray-500 italic">
+                                        Tidak ada toko yang cocok dengan pencarian
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -207,19 +293,25 @@
     </div>
 
     <script>
-        function toggleDistributor(role) {
+        function toggleFields(role) {
             const diGroup = document.getElementById('distributor_group');
             const ouGroup = document.getElementById('outlet_group');
             const baFields = document.getElementById('ba_fields');
+            const hiFields = document.getElementById('hierarchy_fields');
+            const arGroup = document.getElementById('area_group');
             
-            if (role === 'admin') {
-                diGroup.classList.add('hidden');
-                ouGroup.classList.add('hidden');
-                baFields.classList.add('hidden');
-            } else {
+            if (role === 'ba') {
                 diGroup.classList.remove('hidden');
                 ouGroup.classList.remove('hidden');
                 baFields.classList.remove('hidden');
+                hiFields.classList.remove('hidden');
+                arGroup.classList.remove('hidden');
+            } else {
+                diGroup.classList.add('hidden');
+                ouGroup.classList.add('hidden');
+                baFields.classList.add('hidden');
+                hiFields.classList.add('hidden');
+                arGroup.classList.add('hidden');
             }
         }
     </script>

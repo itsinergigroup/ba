@@ -12,7 +12,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             @if(session('success'))
                 <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 shadow-sm rounded-r-lg flex items-center gap-3 animate-fade-in"
                     role="alert">
@@ -24,71 +24,138 @@
             @endif
 
             <!-- Filter Section -->
-            <div
-                class="bg-white dark:bg-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-none sm:rounded-2xl border border-gray-100 dark:border-gray-700">
-                <div class="p-8">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="p-2 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg text-indigo-600 dark:text-indigo-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
-                                    </path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-base font-bold text-gray-900 dark:text-gray-100 tracking-tight">Filter
-                                    Pengguna</h3>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Cari berdasarkan nama, email, atau
-                                    distributor</p>
-                            </div>
+            <div class="bg-white dark:bg-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-none sm:rounded-2xl border border-gray-100 dark:border-gray-700">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg text-indigo-600 dark:text-indigo-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                            </svg>
                         </div>
-                        @if(request()->filled('search'))
-                            <div
-                                class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-full">
-                                <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Pencarian aktif:
-                                    "{{ request('search') }}"</span>
-                                <a href="{{ route('admin.users.index') }}"
-                                    class="text-indigo-400 hover:text-indigo-600 transition-colors">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </a>
-                            </div>
-                        @endif
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 tracking-tight">Filter Pengguna</h3>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Saring berdasarkan nama, peran, atau status akses</p>
+                        </div>
                     </div>
 
-                    <form action="{{ route('admin.users.index') }}" method="GET"
-                        class="flex flex-col md:flex-row gap-4">
-                        <div class="flex-1 relative group">
-                            <div
-                                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-500 transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                            </div>
-                            <input type="text" id="search" name="search" value="{{ request('search') }}"
-                                placeholder="Ketik nama, email, atau distributor..."
-                                class="w-full pl-11 pr-4 py-3 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm shadow-inner placeholder:text-gray-400 dark:text-gray-200">
-                        </div>
-                        <div class="flex gap-3">
-                            <button type="submit"
-                                class="inline-flex items-center justify-center px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0 gap-2 min-w-[140px]">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                                Cari Data
-                            </button>
+                    {{-- Badge filter aktif --}}
+                    @if(request()->filled('search') || request()->filled('role') || request()->filled('access'))
+                        <div class="flex flex-wrap items-center gap-2">
                             @if(request()->filled('search'))
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-full text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                    "{{ request('search') }}"
+                                </span>
+                            @endif
+                            @if(request()->filled('role'))
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-violet-50 dark:bg-violet-900/30 border border-violet-100 dark:border-violet-800 rounded-full text-[11px] font-semibold text-violet-600 dark:text-violet-400">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    {{ strtoupper(request('role')) }}
+                                </span>
+                            @endif
+                            @if(request()->filled('access'))
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 rounded-full text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    {{ request('access') === 'active' ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            @endif
+                            <a href="{{ route('admin.users.index') }}"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-[11px] font-semibold text-gray-500 dark:text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                Reset
+                            </a>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="p-6">
+                    <form action="{{ route('admin.users.index') }}" method="GET">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+
+                            {{-- Cari Nama / Email --}}
+                            <div class="flex flex-col gap-1.5">
+                                <label for="search" class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cari</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="search" name="search" value="{{ request('search') }}"
+                                        placeholder="Nama, email, distributor..."
+                                        class="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:text-gray-200 placeholder:text-gray-400 transition-all">
+                                </div>
+                            </div>
+
+                            {{-- Filter Peran --}}
+                            <div class="flex flex-col gap-1.5">
+                                <label for="role" class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Peran</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        </svg>
+                                    </div>
+                                    <select id="role" name="role"
+                                        class="w-full pl-10 pr-8 py-2.5 text-sm bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 text-gray-700 dark:text-gray-200 appearance-none cursor-pointer transition-all">
+                                        <option value="">— Semua Peran —</option>
+                                        <option value="admin"          {{ request('role') === 'admin'          ? 'selected' : '' }}>Admin</option>
+                                        <option value="ba"             {{ request('role') === 'ba'             ? 'selected' : '' }}>BA (Brand Ambassador)</option>
+                                        <option value="rbs"            {{ request('role') === 'rbs'            ? 'selected' : '' }}>RBS</option>
+                                        <option value="view user only" {{ request('role') === 'view user only' ? 'selected' : '' }}>View User Only</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Filter Akses --}}
+                            <div class="flex flex-col gap-1.5">
+                                <label for="access" class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status Akses</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                        </svg>
+                                    </div>
+                                    <select id="access" name="access"
+                                        class="w-full pl-10 pr-8 py-2.5 text-sm bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 text-gray-700 dark:text-gray-200 appearance-none cursor-pointer transition-all">
+                                        <option value="">— Semua Status —</option>
+                                        <option value="active"   {{ request('access') === 'active'   ? 'selected' : '' }}>✅ Aktif</option>
+                                        <option value="inactive" {{ request('access') === 'inactive' ? 'selected' : '' }}>🔒 Nonaktif</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Tombol Aksi --}}
+                        <div class="mt-4 flex items-center justify-end gap-3">
+                            @if(request()->filled('search') || request()->filled('role') || request()->filled('access'))
                                 <a href="{{ route('admin.users.index') }}"
-                                    class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all shadow-sm">
+                                    class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
                                     Reset
                                 </a>
                             @endif
+                            <button type="submit"
+                                class="inline-flex items-center gap-1.5 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-all shadow-md shadow-indigo-200 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+                                </svg>
+                                Terapkan Filter
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -196,6 +263,19 @@
                                         </td>
                                         <td class="py-5 px-8">
                                             <div class="flex justify-end items-center gap-2">
+                                                <a href="{{ route('admin.users.show', $user->id) }}"
+                                                    class="p-2 text-emerald-600 hover:bg-emerald-600 hover:text-white dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg transition-all shadow-sm border border-emerald-100 dark:border-emerald-900/50"
+                                                    title="Lihat Detail">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </a>
                                                 <a href="{{ route('admin.users.edit', $user->id) }}"
                                                     class="p-2 text-indigo-600 hover:bg-indigo-600 hover:text-white dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-all shadow-sm border border-indigo-100 dark:border-indigo-900/50"
                                                     title="Ubah Data">

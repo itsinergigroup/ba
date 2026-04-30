@@ -16,8 +16,12 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Report::with(['distributor', 'outlet', 'brand', 'product'])
-            ->where('user_id', auth()->id());
+        $user = auth()->user();
+        $query = Report::with(['distributor', 'outlet', 'brand', 'product']);
+
+        if ($user->role === 'ba') {
+            $query->where('user_id', $user->id);
+        }
 
         if ($request->filled('start_date')) {
             $query->where('date', '>=', $request->start_date);
@@ -27,6 +31,12 @@ class ReportController extends Controller
         }
         if ($request->filled('outlet_id')) {
             $query->where('outlet_id', $request->outlet_id);
+        }
+        if ($request->filled('distributor_id')) {
+            $query->where('distributor_id', $request->distributor_id);
+        }
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
         }
 
         // Ambil semua data dan kelompokkan berdasarkan group_id
@@ -46,13 +56,28 @@ class ReportController extends Controller
         );
 
         $user = auth()->user();
+        $bas = [];
+        $distributors = [];
         if ($user->role === 'ba') {
             $outlets = $user->outlets()->orderBy('name')->get();
         } else {
-            $outlets = Outlet::orderBy('name')->get();
+            $bas = \App\Models\User::where('role', 'ba')->orderBy('name')->get();
+            $distributors = \App\Models\Distributor::orderBy('name')->get();
+            $outlets = \App\Models\Outlet::orderBy('name')->get();
+
+            if ($request->filled('distributor_id')) {
+                $bas = \App\Models\User::where('role', 'ba')->where('distributor_id', $request->distributor_id)->orderBy('name')->get();
+            }
+
+            if ($request->filled('user_id')) {
+                $selectedUser = \App\Models\User::find($request->user_id);
+                if ($selectedUser) {
+                    $outlets = $selectedUser->outlets()->orderBy('name')->get();
+                }
+            }
         }
 
-        return view('reports.index', compact('reports', 'outlets'));
+        return view('reports.index', compact('reports', 'outlets', 'bas', 'distributors'));
     }
 
     public function create()
@@ -63,19 +88,15 @@ class ReportController extends Controller
         // If BA, only show their assigned distributor and outlets
         if ($user->role === 'ba') {
             $distributors = Distributor::where('id', $user->distributor_id)->get();
-            $provinces = $user->outlets()
-                ->join('cities', 'outlets.city_id', '=', 'cities.id')
-                ->join('provinces', 'cities.province_id', '=', 'provinces.id')
-                ->select('provinces.*')
-                ->distinct()
-                ->orderBy('provinces.name')
-                ->get();
+            $outlets = $user->outlets()->orderBy('name')->get();
         } else {
             $distributors = Distributor::all();
-            $provinces = Province::orderBy('name')->get();
+            $outlets = Outlet::orderBy('name')->get();
         }
 
-        return view('reports.create', compact('distributors', 'provinces', 'brands'));
+        $provinces = Province::orderBy('name')->get();
+
+        return view('reports.create', compact('distributors', 'outlets', 'brands', 'provinces'));
     }
 
     public function store(Request $request)
@@ -98,6 +119,9 @@ class ReportController extends Controller
         // Generate a unique ID for this transaction group
         $groupId = 'TRX-' . strtoupper(uniqid());
 
+        // Get distributor to inherit channel and account_type
+        $distributor = Distributor::findOrFail($request->distributor_id);
+
         foreach ($request->items as $item) {
             $product = Product::findOrFail($item['product_id']);
 
@@ -106,16 +130,18 @@ class ReportController extends Controller
             $unitPrice = (float) $unitPrice;
 
             $het = $product->het;
-            $discount = (($het - $unitPrice) / $het) * 100;
+            $discount = (($unitPrice - $het) / $het) * 100;
             $totalPrice = $unitPrice * $item['quantity'];
 
             Report::create([
                 'user_id' => auth()->id(),
                 'group_id' => $groupId,
                 'date' => $request->date,
-                'distributor_id' => $request->distributor_id,
+                'distributor_id' => $distributor->id,
                 'account_type' => $request->account_type,
                 'channel' => $request->channel,
+                'province_id' => $request->province_id,
+                'city_id' => $request->city_id,
                 'outlet_id' => $request->outlet_id,
                 'brand_id' => $item['brand_id'],
                 'product_id' => $item['product_id'],
@@ -146,20 +172,16 @@ class ReportController extends Controller
         $user = auth()->user();
         if ($user->role === 'ba') {
             $distributors = Distributor::where('id', $user->distributor_id)->get();
-            $provinces = $user->outlets()
-                ->join('cities', 'outlets.city_id', '=', 'cities.id')
-                ->join('provinces', 'cities.province_id', '=', 'provinces.id')
-                ->select('provinces.*')
-                ->distinct()
-                ->orderBy('provinces.name')
-                ->get();
+            $outlets = $user->outlets()->orderBy('name')->get();
         } else {
             $distributors = Distributor::all();
-            $provinces = Province::orderBy('name')->get();
+            $outlets = Outlet::orderBy('name')->get();
         }
+        $existingProductIds = $reports->pluck('product_id')->unique()->values();
+        $provinces = Province::orderBy('name')->get();
         $brands = Brand::all();
 
-        return view('reports.edit', compact('report', 'reports', 'distributors', 'provinces', 'brands'));
+        return view('reports.edit', compact('report', 'reports', 'distributors', 'outlets', 'brands', 'existingProductIds', 'provinces'));
     }
 
     public function show(Report $report)
@@ -167,12 +189,12 @@ class ReportController extends Controller
         // If the report has a group_id, fetch all items in that group
         if ($report->group_id) {
             $reports = Report::where('group_id', $report->group_id)
-                ->with(['distributor', 'outlet.city.province', 'brand', 'product', 'user'])
+                ->with(['distributor', 'outlet', 'brand', 'product', 'user'])
                 ->get();
             $mainReport = $reports->first();
         } else {
             // Fallback for old reports without group_id
-            $reports = collect([$report->load(['distributor', 'outlet.city.province', 'brand', 'product', 'user'])]);
+            $reports = collect([$report->load(['distributor', 'outlet', 'brand', 'product', 'user'])]);
             $mainReport = $report;
         }
 
@@ -190,6 +212,8 @@ class ReportController extends Controller
             'distributor_id' => 'required|exists:distributors,id',
             'account_type' => 'required|in:GT,MT',
             'channel' => 'required|in:Direct,Indirect',
+            'province_id' => 'required|exists:provinces,id',
+            'city_id' => 'required|exists:cities,id',
             'outlet_id' => 'required|exists:outlets,id',
             'items' => 'required|array|min:1',
             'items.*.brand_id' => 'required|exists:brands,id',
@@ -199,6 +223,9 @@ class ReportController extends Controller
         ]);
 
         $groupId = $report->group_id ?: 'TRX-' . strtoupper(uniqid());
+
+        // Get distributor to inherit channel and account_type
+        $distributor = Distributor::findOrFail($request->distributor_id);
 
         // Delete existing items in this group before re-creating
         if ($report->group_id) {
@@ -211,16 +238,18 @@ class ReportController extends Controller
             $product = Product::findOrFail($item['product_id']);
             $unitPrice = (float) str_replace('.', '', $item['unit_price']);
             $het = $product->het;
-            $discount = (($het - $unitPrice) / $het) * 100;
+            $discount = (($unitPrice - $het) / $het) * 100;
             $totalPrice = $unitPrice * $item['quantity'];
 
             Report::create([
                 'user_id' => auth()->id(),
                 'group_id' => $groupId,
                 'date' => $request->date,
-                'distributor_id' => $request->distributor_id,
+                'distributor_id' => $distributor->id,
                 'account_type' => $request->account_type,
                 'channel' => $request->channel,
+                'province_id' => $request->province_id,
+                'city_id' => $request->city_id,
                 'outlet_id' => $request->outlet_id,
                 'brand_id' => $item['brand_id'],
                 'product_id' => $item['product_id'],
@@ -250,5 +279,16 @@ class ReportController extends Controller
         }
 
         return redirect()->route('reports.index')->with('success', $message);
+    }
+
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user->isAnyViewer()) {
+            abort(403);
+        }
+
+        $fileName = 'Laporan_Penjualan_' . date('Y-m-d_His') . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ReportsExport($request), $fileName);
     }
 }

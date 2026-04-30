@@ -24,6 +24,8 @@ class Report extends Model
         'unit_price',
         'discount',
         'total_price',
+        'province_id',
+        'city_id',
     ];
 
     public function user()
@@ -49,5 +51,15 @@ class Report extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }

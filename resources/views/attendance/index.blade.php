@@ -17,7 +17,15 @@
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Pantau kehadiran Anda setiap hari</p>
             </div>
-            @if(!Auth::user()->hasFinishedAttendanceToday())
+            @if(Auth::user()->hasApprovedDayOffToday())
+                <div
+                    class="w-full md:w-auto text-center px-6 py-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-bold rounded-xl border border-purple-200 dark:border-purple-800 cursor-not-allowed flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Menikmati Hari Libur (Day-Off)
+                </div>
+            @elseif(!Auth::user()->hasFinishedAttendanceToday())
                 <a href="{{ route('attendance.create') }}"
                     class="w-full md:w-auto text-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg shadow-blue-200 dark:shadow-none transition transform active:scale-95 duration-200">
                     + Absen Sekarang
@@ -35,7 +43,54 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Alert Incomplete Attendance -->
+            @if(Auth::user()->hasIncompleteAttendance())
+                @php $incomplete = Auth::user()->getIncompleteAttendance(); @endphp
+                <div class="mx-4 md:mx-0 bg-amber-50 border-l-4 border-amber-400 p-6 rounded-xl mb-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 animate-pulse">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-amber-100 rounded-full text-amber-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-amber-800 font-black text-sm uppercase tracking-tight">Peringatan Absensi Belum Lengkap!</h4>
+                            <p class="text-amber-700 text-xs mt-1">
+                                Anda tercatat melakukan <strong>Check-in</strong> pada <strong>{{ date('d M Y', strtotime($incomplete->date)) }}</strong> pukul {{ date('H:i', strtotime($incomplete->time)) }}, namun belum melakukan <strong>Check-out</strong>.
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{{ route('attendance.request.create', ['type' => 'check-out', 'date' => $incomplete->date]) }}" 
+                       class="inline-flex items-center justify-center px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition shadow-md shadow-amber-200">
+                        Ajukan Koreksi Check-out
+                    </a>
+                </div>
+            @endif
+
+            <!-- Alert Missing Attendance Entirely -->
+            @if(Auth::user()->hasMissingAttendanceYesterday())
+                <div class="mx-4 md:mx-0 bg-rose-50 border-l-4 border-rose-500 p-6 rounded-xl mb-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-rose-100 rounded-full text-rose-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-rose-800 font-black text-sm uppercase tracking-tight">Peringatan: Tidak Ada Data Absensi!</h4>
+                            <p class="text-rose-700 text-xs mt-1">
+                                Sistem mendeteksi Anda <strong>tidak melakukan absensi sama sekali</strong> pada hari kerja kemarin ({{ date('d M Y', strtotime('-1 day')) }}). Apakah Anda lupa?
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{{ route('attendance.request.create', ['date' => date('Y-m-d', strtotime('-1 day'))]) }}" 
+                       class="inline-flex items-center justify-center px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition shadow-md shadow-rose-200">
+                        Ajukan Lupa Absen
+                    </a>
+                </div>
+            @endif
+
             <!-- Alert Success -->
             @if(session('success'))
                 <div class="mx-4 md:mx-0 flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 text-green-700 dark:text-green-400 px-6 py-4 rounded-xl mb-8 shadow-sm"
@@ -112,17 +167,6 @@
                                     <p class="text-2xl font-black text-indigo-600">
                                         {{ date('H:i', strtotime($atten->time)) }}
                                     </p>
-                                    @if($atten->type === 'check-in')
-                                        @if($atten->late_minutes > 0)
-                                            <span class="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm">
-                                                Terlambat 
-                                                @php $h = floor($atten->late_minutes / 60); $m = $atten->late_minutes % 60; @endphp
-                                                {{ $h > 0 ? $h . 'j ' : '' }}{{ $m > 0 ? $m . 'm' : '' }}
-                                            </span>
-                                        @else
-                                            <span class="bg-green-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm">Tepat Waktu</span>
-                                        @endif
-                                    @endif
                                 </div>
                                 <p class="text-sm font-bold text-gray-600 dark:text-gray-400 flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,22 +179,7 @@
                             </div>
                         </div>
 
-                        @if($atten->type === 'check-in')
-                            <div
-                                class="mt-4 p-3 {{ $atten->late_minutes > 0 ? 'bg-red-50 dark:bg-red-900/10 text-red-600' : 'bg-green-50 dark:bg-green-900/10 text-green-600' }} rounded-xl text-[11px] font-bold flex justify-between items-center transition-colors">
-                                <span
-                                    class="uppercase tracking-widest">{{ $atten->late_minutes > 0 ? 'Keterlambatan' : 'Status Kehadiran' }}</span>
-                                <span
-                                    class="{{ $atten->late_minutes > 0 ? 'bg-red-600 text-white' : 'bg-green-600 text-white' }} px-3 py-1 rounded-lg">
-                                    @if($atten->late_minutes > 0)
-                                        @php $h = floor($atten->late_minutes / 60); $m = $atten->late_minutes % 60; @endphp
-                                        {{ $h > 0 ? $h . ' Jam ' : '' }}{{ $m > 0 ? $m . ' Menit' : '' }}
-                                    @else
-                                        Tepat Waktu
-                                    @endif
-                                </span>
-                            </div>
-                        @endif
+
 
                         <div class="mt-4 pt-4 border-t dark:border-gray-700 flex justify-between items-center">
                             <a href="{{ route('attendance.show', $atten) }}" class="text-[10px] font-black text-white bg-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-700 transition uppercase tracking-widest shadow-sm">
@@ -211,17 +240,6 @@
                                                 <div class="text-indigo-600 font-black text-sm">
                                                     {{ date('H:i', strtotime($atten->time)) }}
                                                 </div>
-                                                @if($atten->type === 'check-in')
-                                                    @if($atten->late_minutes > 0)
-                                                    <span class="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm">
-                                                        Terlambat 
-                                                        @php $h = floor($atten->late_minutes / 60); $m = $atten->late_minutes % 60; @endphp
-                                                        {{ $h > 0 ? $h . 'j ' : '' }}{{ $m > 0 ? $m . 'm' : '' }}
-                                                    </span>
-                                                @else
-                                                        <span class="bg-green-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm">Tepat Waktu</span>
-                                                    @endif
-                                                @endif
                                             </div>
                                         </td>
                                         <td class="py-6 px-6">

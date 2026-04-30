@@ -15,7 +15,9 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search  = $request->input('search');
+        $role    = $request->input('role');
+        $access  = $request->input('access'); // 'active' | 'inactive'
 
         $users = \App\Models\User::with(['distributor', 'outlets'])
             ->where('id', '!=', auth()->id())
@@ -28,6 +30,9 @@ class UserController extends Controller
                         });
                 });
             })
+            ->when($role, fn($q) => $q->where('role', $role))
+            ->when($access === 'active',   fn($q) => $q->where('is_active', true))
+            ->when($access === 'inactive', fn($q) => $q->where('is_active', false))
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -35,10 +40,19 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
+    public function show(string $id)
+    {
+        $user = \App\Models\User::with(['distributor', 'outlets', 'profile', 'documents', 'rbs'])->findOrFail($id);
+        return view('admin.users.show', compact('user'));
+    }
+
     public function create()
     {
         $distributors = \App\Models\Distributor::all();
-        return view('admin.users.create', compact('distributors'));
+        $rbsUsers = \App\Models\User::where('role', 'rbs')->orderBy('name')->get();
+        $regions = \App\Models\Region::orderBy('name')->get();
+        $areas = \App\Models\Area::orderBy('name')->get();
+        return view('admin.users.create', compact('distributors', 'rbsUsers', 'regions', 'areas'));
     }
 
     public function store(Request $request)
@@ -47,7 +61,11 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . \App\Models\User::class],
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,ba'],
+            'role' => ['required', 'in:admin,ba,rbs,view user only'],
+            'cluster' => ['nullable', 'in:A,B,Area'],
+            'region' => ['nullable', 'string', 'max:255'],
+            'areas' => ['nullable', 'array'],
+            'rbs_id' => ['nullable', 'exists:users,id'],
             'distributor_id' => ['required_if:role,ba', 'nullable', 'exists:distributors,id'],
             'outlets' => ['array'],
             'outlets.*' => ['exists:outlets,id'],
@@ -81,6 +99,10 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => \Hash::make($request->password),
             'role' => $request->role,
+            'cluster' => $request->cluster,
+            'region' => $request->region,
+            'areas' => $request->areas,
+            'rbs_id' => $request->rbs_id,
             'distributor_id' => $request->distributor_id,
             'photo_path' => $photoPath,
             'is_active' => true,
@@ -125,7 +147,10 @@ class UserController extends Controller
     {
         $user = \App\Models\User::with('outlets')->findOrFail($id);
         $distributors = \App\Models\Distributor::all();
-        return view('admin.users.edit', compact('user', 'distributors'));
+        $rbsUsers = \App\Models\User::where('role', 'rbs')->orderBy('name')->get();
+        $regions = \App\Models\Region::orderBy('name')->get();
+        $areas = \App\Models\Area::orderBy('name')->get();
+        return view('admin.users.edit', compact('user', 'distributors', 'rbsUsers', 'regions', 'areas'));
     }
 
     public function update(Request $request, string $id)
@@ -135,7 +160,11 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'role' => ['required', 'in:admin,ba'],
+            'role' => ['required', 'in:admin,ba,rbs,view user only'],
+            'cluster' => ['nullable', 'in:A,B,Area'],
+            'region' => ['nullable', 'string', 'max:255'],
+            'areas' => ['nullable', 'array'],
+            'rbs_id' => ['nullable', 'exists:users,id'],
             'distributor_id' => ['required_if:role,ba', 'nullable', 'exists:distributors,id'],
             'outlets' => ['array'],
             'outlets.*' => ['exists:outlets,id'],
@@ -163,6 +192,10 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
+            'cluster' => $request->cluster,
+            'region' => $request->region,
+            'areas' => $request->areas,
+            'rbs_id' => $request->rbs_id,
             'distributor_id' => $request->distributor_id,
         ];
 
@@ -193,7 +226,7 @@ class UserController extends Controller
             );
 
             // Update or Create Documents
-            if ($request->hasFiles('documents')) {
+            if ($request->has('documents')) {
                 foreach ($request->file('documents', []) as $type => $file) {
                     if ($file) {
                         $existingDoc = EmployeeDocument::where('user_id', $user->id)->where('type', $type)->first();

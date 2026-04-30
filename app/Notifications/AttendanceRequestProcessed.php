@@ -39,11 +39,12 @@ class AttendanceRequestProcessed extends Notification
     public function toArray(object $notifiable): array
     {
         $statusLabel = $this->request->status === 'approved' ? 'DISETUJUI' : 'DITOLAK';
+        $requestType = $this->request->type === 'day-off' ? 'Izin/Day-Off' : 'Lupa Absen';
 
         return [
             'request_id' => $this->request->id,
             'status' => $this->request->status,
-            'message' => 'Pengajuan lupa absen Anda pada tanggal ' . $this->request->date . ' telah ' . $statusLabel,
+            'message' => "Pengajuan {$requestType} Anda pada tanggal {$this->request->date} telah {$statusLabel}",
             'admin_note' => $this->request->admin_note,
             'url' => route('attendance.request.index'),
         ];

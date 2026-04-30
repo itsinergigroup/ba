@@ -73,8 +73,21 @@ class DashboardController extends Controller
         }
 
         $distributors = \App\Models\Distributor::orderBy('name')->get();
-        $outlets = \App\Models\Outlet::orderBy('name')->get();
         $bas = User::where('role', 'ba')->orderBy('name')->get();
+        $outlets = \App\Models\Outlet::orderBy('name')->get();
+
+        // Only filter BAs if distributor is explicitly selected
+        if ($request->filled('distributor_id')) {
+            $bas = User::where('role', 'ba')->where('distributor_id', $request->distributor_id)->orderBy('name')->get();
+        }
+
+        if ($request->filled('user_id')) {
+            $selectedUser = User::find($request->user_id);
+            if ($selectedUser) {
+                $outlets = $selectedUser->outlets()->orderBy('name')->get();
+                // Don't override distributors list here, just select the one if needed
+            }
+        }
 
         return view('admin.dashboard', compact('stats', 'distributors', 'outlets', 'bas', 'reports', 'ba_summary', 'chart_data', 'chart_labels'));
     }

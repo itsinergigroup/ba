@@ -15,6 +15,7 @@ class AttendanceRequest extends Model
         'reason',
         'status',
         'admin_note',
+        'photo_path',
     ];
 
     public function user()

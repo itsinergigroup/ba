@@ -53,10 +53,7 @@ class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
             'Waktu',
             'Tipe Absen',
             'Nama BA',
-            'Toko / Outlet',
             'Distributor',
-            'Status Kedatangan',
-            'Keterlambatan (Menit)',
             'Koordinat (Lat, Lng)',
             'Sumber Data',
             'Keterangan (Alasan)'
@@ -68,19 +65,6 @@ class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
         static $rowNumber = 0;
         $rowNumber++;
 
-        $lateMinutes = '-';
-        if ($attendance->late_minutes > 0) {
-            $h = floor($attendance->late_minutes / 60);
-            $m = $attendance->late_minutes % 60;
-            $parts = [];
-            if ($h > 0)
-                $parts[] = $h . ' Jam';
-            if ($m > 0)
-                $parts[] = $m . ' Menit';
-            $lateMinutes = implode(' ', $parts);
-        }
-        $status = $attendance->late_minutes > 0 ? 'Terlambat' : 'Tepat Waktu';
-
         // Cek apakah data berasal dari pengajuan manual
         $source = $attendance->attendance_request_id ? 'PENGAJUAN MANUAL' : 'SISTEM (GPS)';
         $reason = $attendance->attendanceRequest->reason ?? '-';
@@ -88,7 +72,6 @@ class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
 
         // Jika pengajuan berasal dari sistem (auto Missed Attendance track)
         if ($attendance->attendance_request_id && in_array($reason, ['Alpha', 'Tidak Check-out'])) {
-            $status = strtoupper($reason);
             $source = 'SISTEM (OTOMATIS)';
         }
 
@@ -98,10 +81,7 @@ class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
             date('H:i', strtotime($attendance->time)),
             strtoupper($attendance->type),
             optional($attendance->user)->name ?? '-',
-            optional($attendance->outlet)->name ?? 'LOKASI UMUM',
             optional($attendance->user->distributor)->name ?? 'Internal',
-            $status,
-            $lateMinutes,
             $coordinates,
             $source,
             $reason

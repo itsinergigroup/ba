@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <form action="{{ route('reports.update', $report->id) }}" method="POST" id="reportForm">
                     @csrf
@@ -33,7 +33,7 @@
                                 <x-input-label for="distributor_id" :value="__('Distributor')" />
                                 <select id="distributor_id" name="distributor_id"
                                     class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                    required onchange="fetchProvinces(this.value)">
+                                    required>
                                     <option value="">-- Pilih Distributor --</option>
                                     @foreach($distributors as $dist)
                                         <option value="{{ $dist->id }}" {{ $report->distributor_id == $dist->id ? 'selected' : '' }}>{{ $dist->name }}</option>
@@ -45,6 +45,7 @@
                                 <select id="account_type" name="account_type"
                                     class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     required>
+                                    <option value=""></option>
                                     <option value="GT" {{ $report->account_type == 'GT' ? 'selected' : '' }}>GT</option>
                                     <option value="MT" {{ $report->account_type == 'MT' ? 'selected' : '' }}>MT</option>
                                 </select>
@@ -54,10 +55,9 @@
                                 <select id="channel" name="channel"
                                     class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     required>
-                                    <option value="Direct" {{ $report->channel == 'Direct' ? 'selected' : '' }}>Direct
-                                    </option>
-                                    <option value="Indirect" {{ $report->channel == 'Indirect' ? 'selected' : '' }}>
-                                        Indirect</option>
+                                    <option value=""></option>
+                                    <option value="Direct" {{ $report->channel == 'Direct' ? 'selected' : '' }}>Direct</option>
+                                    <option value="Indirect" {{ $report->channel == 'Indirect' ? 'selected' : '' }}>Indirect</option>
                                 </select>
                             </div>
                         </div>
@@ -69,7 +69,7 @@
                             class="bg-gray-50 dark:bg-gray-700 px-4 py-2 font-bold border-b border-gray-200 dark:border-gray-700">
                             Informasi Toko
                         </div>
-                        <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <x-input-label for="province_id" :value="__('Provinsi')" />
                                 <select id="province_id" name="province_id"
@@ -77,29 +77,29 @@
                                     required onchange="fetchCities(this.value)">
                                     <option value="">-- Pilih Provinsi --</option>
                                     @foreach($provinces as $prov)
-                                        <option value="{{ $prov->id }}" {{ $report->outlet->city->province_id == $prov->id ? 'selected' : '' }}>{{ $prov->name }}</option>
+                                        <option value="{{ $prov->id }}" {{ $report->province_id == $prov->id ? 'selected' : '' }}>{{ $prov->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div>
-                                <x-input-label for="city_id" :value="__('Kota/Kabupaten')" />
+                                <x-input-label for="city_id" :value="__('Kota / Kabupaten')" />
                                 <select id="city_id" name="city_id"
                                     class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                    required onchange="fetchOutlets(this.value)">
+                                    required>
                                     <option value="">-- Pilih Kota --</option>
-                                    <option value="{{ $report->outlet->city_id }}" selected>
-                                        {{ $report->outlet->city->name }}
-                                    </option>
                                 </select>
                             </div>
-                            <div>
+                            <div class="md:col-span-2">
                                 <x-input-label for="outlet_id" :value="__('Nama Toko')" />
                                 <select id="outlet_id" name="outlet_id"
                                     class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     required>
                                     <option value="">-- Pilih Toko --</option>
-                                    <option value="{{ $report->outlet_id }}" selected>{{ $report->outlet->name }}
-                                    </option>
+                                    @foreach($outlets as $outlet)
+                                        <option value="{{ $outlet->id }}" {{ $report->outlet_id == $outlet->id ? 'selected' : '' }}>
+                                            {{ $outlet->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -299,32 +299,30 @@
             }
         }
 
-        async function fetchProvinces(distributorId) {
-            const provinceSelect = document.getElementById('province_id');
-            provinceSelect.innerHTML = '<option value="">-- Loading... --</option>';
-            if (!distributorId) return;
-            const response = await fetch(`/api/provinces/${distributorId}`);
-            const provinces = await response.json();
-            provinceSelect.innerHTML = '<option value="">-- Pilih Provinsi --</option>';
-            provinces.forEach(prov => provinceSelect.innerHTML += `<option value="${prov.id}">${prov.name}</option>`);
-        }
+        const distributorsData = @json($distributors->keyBy('id'));
 
-        async function fetchCities(provinceId) {
+        async function fetchCities(provinceId, selectedCityId = null) {
             const citySelect = document.getElementById('city_id');
-            citySelect.innerHTML = '<option value="">-- Loading... --</option>';
-            const response = await fetch(`/api/cities/${provinceId}`);
-            const cities = await response.json();
-            citySelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
-            cities.forEach(city => citySelect.innerHTML += `<option value="${city.id}">${city.name}</option>`);
-        }
+            citySelect.innerHTML = '<option value="">-- Memuat... --</option>';
 
-        async function fetchOutlets(cityId) {
-            const outletSelect = document.getElementById('outlet_id');
-            outletSelect.innerHTML = '<option value="">-- Loading... --</option>';
-            const response = await fetch(`/api/outlets/${cityId}`);
-            const outlets = await response.json();
-            outletSelect.innerHTML = '<option value="">-- Pilih Toko --</option>';
-            outlets.forEach(outlet => outletSelect.innerHTML += `<option value="${outlet.id}">${outlet.name}</option>`);
+            if (!provinceId) {
+                citySelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/cities/${provinceId}`);
+                const cities = await response.json();
+
+                citySelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
+                cities.forEach(city => {
+                    const selected = (selectedCityId && city.id == selectedCityId) ? 'selected' : '';
+                    citySelect.innerHTML += `<option value="${city.id}" ${selected}>${city.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Error fetching cities:', error);
+                citySelect.innerHTML = '<option value="">-- Gagal memuat data --</option>';
+            }
         }
 
         async function fetchProducts(brandSelect) {
@@ -348,12 +346,12 @@
             });
 
             if (selectedId) {
-                setHET(productSelect);
+                setHET(productSelect, false);
                 delete productSelect.dataset.selectedProduct;
             }
         }
 
-        function setHET(productSelect) {
+        function setHET(productSelect, forcePriceUpdate = true) {
             const row = productSelect.closest('tr');
             if (!row) return;
 
@@ -365,7 +363,7 @@
             if (!productId) {
                 hetDisplay.innerText = "-";
                 hetHidden.value = "0";
-                priceInput.value = "";
+                if (forcePriceUpdate) priceInput.value = "";
                 calculateRow(row);
                 return;
             }
@@ -383,10 +381,9 @@
                 hetDisplay.innerText = formatNumber(hetValue);
                 hetHidden.value = hetValue;
 
-                // Only set price if price input was empty (meaning it's likely a change of product)
-                // BUT for edit, we might want to keep original price IF product hasn't changed.
-                // However, user requirement says price is read-only from master anyway.
-                priceInput.value = formatNumber(sellingPriceValue);
+                if (forcePriceUpdate) {
+                    priceInput.value = formatNumber(sellingPriceValue);
+                }
 
                 calculateRow(row);
             }
@@ -402,7 +399,7 @@
 
             const discDisplay = row.querySelector('.disc-display');
             if (het > 0) {
-                const disc = ((het - price) / het) * 100;
+                const disc = ((price - het) / het) * 100;
                 discDisplay.innerText = disc.toFixed(1) + '%';
             } else {
                 discDisplay.innerText = '0%';
@@ -438,6 +435,12 @@
         }
 
         window.addEventListener('load', () => {
+            // Initial city load if province exists
+            const provinceId = document.getElementById('province_id').value;
+            if (provinceId) {
+                fetchCities(provinceId, "{{ $report->city_id }}");
+            }
+
             // Trigger product fetching for initial rows
             document.querySelectorAll('.product-select').forEach(ps => {
                 const brandSelect = ps.closest('tr').querySelector('select[name*="brand_id"]');

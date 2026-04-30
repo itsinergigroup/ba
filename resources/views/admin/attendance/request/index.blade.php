@@ -2,13 +2,13 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Manajemen Pengajuan Absen') }}
+                {{ __('Manajemen Pengajuan & Day-Off') }}
             </h2>
         </div>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             @if(session('success'))
                 <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 shadow-sm rounded-r-lg flex items-center gap-3 animate-fade-in"
                     role="alert">
@@ -93,10 +93,13 @@
                                         Waktu Pengajuan</th>
                                     <th
                                         class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
-                                        Tipe / Toko</th>
+                                        Tipe Pengajuan</th>
                                     <th
                                         class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
                                         Alasan</th>
+                                    <th
+                                        class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 text-center">
+                                        Bukti</th>
                                     <th
                                         class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 text-center">
                                         Status</th>
@@ -127,19 +130,29 @@
                                             <div class="flex flex-col">
                                                 <span
                                                     class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ \Carbon\Carbon::parse($request->date)->format('d M Y') }}</span>
-                                                <span
-                                                    class="text-[11px] text-gray-400">{{ \Carbon\Carbon::parse($request->time)->format('H:i') }}
-                                                    WIB</span>
+                                                @if($request->type !== 'day-off')
+                                                    <span
+                                                        class="text-[11px] text-gray-400">{{ \Carbon\Carbon::parse($request->time)->format('H:i') }}
+                                                        WIB</span>
+                                                @else
+                                                    <span class="text-[11px] text-gray-400 italic">Seharian</span>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="py-5 px-6">
                                             <div class="flex flex-col gap-1">
+                                                @php
+                                                    $typeColor = match($request->type) {
+                                                        'check-in' => 'bg-blue-100 text-blue-800',
+                                                        'check-out' => 'bg-indigo-100 text-indigo-800',
+                                                        'day-off' => 'bg-purple-100 text-purple-800',
+                                                        default => 'bg-gray-100 text-gray-800'
+                                                    };
+                                                @endphp
                                                 <span
-                                                    class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-gray-100 text-gray-700 w-max">
-                                                    {{ $request->type }}
+                                                    class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold uppercase {{ $typeColor }} w-max">
+                                                    {{ str_replace('-', ' ', $request->type) }}
                                                 </span>
-                                                <span
-                                                    class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ $request->outlet->name ?? '-' }}</span>
                                             </div>
                                         </td>
                                         <td class="py-5 px-6">
@@ -147,6 +160,23 @@
                                                 title="{{ $request->reason }}">
                                                 {{ $request->reason }}
                                             </p>
+                                        </td>
+                                        <td class="py-5 px-6 text-center">
+                                            @if($request->photo_path)
+                                                <a href="{{ asset('storage/' . $request->photo_path) }}" target="_blank" class="inline-block relative group">
+                                                    <img src="{{ asset('storage/' . $request->photo_path) }}" 
+                                                         class="w-10 h-10 object-cover rounded-lg ring-2 ring-white dark:ring-gray-700 shadow-sm transition-transform group-hover:scale-110" 
+                                                         alt="Bukti">
+                                                    <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </div>
+                                                </a>
+                                            @else
+                                                <span class="text-[10px] text-gray-300 italic">No Photo</span>
+                                            @endif
                                         </td>
                                         <td class="py-5 px-6 text-center">
                                             @php
@@ -180,6 +210,13 @@
                                                                 Tinjau Pengajuan</h4>
                                                             <p class="text-sm text-gray-500 mb-6">Tentukan apakah pengajuan dari
                                                                 <strong>{{ $request->user->name }}</strong> dapat disetujui.</p>
+
+                                                            @if($request->photo_path)
+                                                                <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Foto Bukti Terlampir:</p>
+                                                                    <img src="{{ asset('storage/' . $request->photo_path) }}" class="w-full h-48 object-cover rounded-xl shadow-lg border-2 border-white dark:border-gray-800" alt="Evidence">
+                                                                </div>
+                                                            @endif
 
                                                             <form
                                                                 action="{{ route('admin.attendance-requests.update', $request->id) }}"
@@ -225,7 +262,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="py-24 text-center">
+                                        <td colspan="7" class="py-24 text-center">
                                             <div class="flex flex-col items-center gap-4">
                                                 <div
                                                     class="w-20 h-20 bg-gray-50 dark:bg-gray-900/50 rounded-full flex items-center justify-center text-gray-200 dark:text-gray-800">

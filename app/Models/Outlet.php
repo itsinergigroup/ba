@@ -9,11 +9,11 @@ class Outlet extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'city_id', 'address'];
+    protected $fillable = ['name', 'address', 'area_id'];
 
-    public function city()
+    public function area()
     {
-        return $this->belongsTo(City::class);
+        return $this->belongsTo(Area::class);
     }
 
     public function users()

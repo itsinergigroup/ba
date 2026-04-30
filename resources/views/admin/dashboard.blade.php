@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Filters -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6">
@@ -24,7 +24,7 @@
                         </div>
                         <div>
                             <x-input-label for="distributor_id" :value="__('Distributor')" />
-                            <select name="distributor_id"
+                            <select name="distributor_id" id="distributor_filter" onchange="fetchBAs(this.value)"
                                 class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm">
                                 <option value="">-- Semua Distributor --</option>
                                 @foreach($distributors as $distributor)
@@ -36,7 +36,7 @@
                         </div>
                         <div>
                             <x-input-label for="outlet_id" :value="__('Toko')" />
-                            <select name="outlet_id"
+                            <select name="outlet_id" id="outlet_filter"
                                 class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm">
                                 <option value="">-- Semua Toko --</option>
                                 @foreach($outlets as $outlet)
@@ -46,7 +46,7 @@
                         </div>
                         <div>
                             <x-input-label for="user_id" :value="__('Beauty Advisor')" />
-                            <select name="user_id"
+                            <select name="user_id" id="user_filter" onchange="fetchBAData(this.value)"
                                 class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm">
                                 <option value="">-- Semua BA --</option>
                                 @foreach($bas as $ba)
@@ -63,11 +63,13 @@
                         </div>
                     </form>
                     <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <a href="{{ route('admin.export.reports', array_merge(request()->all(), ['format' => 'xlsx'])) }}"
+                        <a href="{{ route('reports.export', array_merge(request()->all(), ['format' => 'xlsx'])) }}"
+                            id="export_excel_btn"
                             class="px-4 py-2 bg-green-600 text-white rounded text-sm font-semibold hover:bg-green-700 transition flex items-center whitespace-nowrap">
                             Export Excel
                         </a>
-                        <a href="{{ route('admin.export.reports', array_merge(request()->all(), ['format' => 'csv'])) }}"
+                        <a href="{{ route('reports.export', array_merge(request()->all(), ['format' => 'csv'])) }}"
+                            id="export_csv_btn"
                             class="px-4 py-2 bg-blue-600 text-white rounded text-sm font-semibold hover:bg-blue-700 transition flex items-center whitespace-nowrap">
                             Export CSV
                         </a>
@@ -232,6 +234,101 @@
     </div>
 
     @push('scripts')
+        <script>
+            function fetchBAData(userId) {
+                const outletFilter = document.getElementById('outlet_filter');
+                const distributorFilter = document.getElementById('distributor_filter');
+                
+                if (!userId) {
+                    location.href = "{{ route('admin.dashboard') }}";
+                    return;
+                }
+
+                fetch(`/api/users/${userId}/data`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update Outlets
+                        outletFilter.innerHTML = '<option value="">-- Semua Toko --</option>';
+                        data.outlets.forEach(outlet => {
+                            outletFilter.innerHTML += `<option value="${outlet.id}">${outlet.name}</option>`;
+                        });
+
+                        // Update Distributor
+                        if (data.distributor) {
+                            distributorFilter.value = data.distributor.id;
+                        }
+                        updateExportLinks();
+                    })
+                    .catch(error => console.error('Error fetching data:', error));
+            }
+
+            function fetchBAs(distributorId) {
+                const userFilter = document.getElementById('user_filter');
+                if (!distributorId) {
+                    // Fetch all BAs instead of reloading
+                    fetch(`/api/bas/all`)
+                        .then(response => response.json())
+                        .then(data => {
+                            userFilter.innerHTML = '<option value="">-- Semua BA --</option>';
+                            data.forEach(ba => {
+                                userFilter.innerHTML += `<option value="${ba.id}">${ba.name}</option>`;
+                            });
+                            updateExportLinks();
+                        });
+                    return;
+                }
+
+                fetch(`/api/distributors/${distributorId}/bas`)
+                    .then(response => response.json())
+                    .then(data => {
+                        userFilter.innerHTML = '<option value="">-- Semua BA --</option>';
+                        data.forEach(ba => {
+                            userFilter.innerHTML += `<option value="${ba.id}">${ba.name}</option>`;
+                        });
+                        updateExportLinks();
+                    })
+                    .catch(error => console.error('Error fetching BAs:', error));
+            }
+
+            function updateExportLinks() {
+                const start = document.getElementById('start_date').value;
+                const end = document.getElementById('end_date').value;
+                const dist = document.getElementById('distributor_filter').value;
+                const outlet = document.getElementById('outlet_filter').value;
+                const ba = document.getElementById('user_filter').value;
+
+                const params = new URLSearchParams();
+                if (start) params.append('start_date', start);
+                if (end) params.append('end_date', end);
+                if (dist) params.append('distributor_id', dist);
+                if (outlet) params.append('outlet_id', outlet);
+                if (ba) params.append('user_id', ba);
+
+                const excelBtn = document.getElementById('export_excel_btn');
+                const csvBtn = document.getElementById('export_csv_btn');
+
+                if (excelBtn) {
+                    const excelUrl = new URL("{{ route('reports.export') }}", window.location.origin);
+                    params.set('format', 'xlsx');
+                    excelUrl.search = params.toString();
+                    excelBtn.href = excelUrl.href;
+                }
+
+                if (csvBtn) {
+                    const csvUrl = new URL("{{ route('reports.export') }}", window.location.origin);
+                    params.set('format', 'csv');
+                    csvUrl.search = params.toString();
+                    csvBtn.href = csvUrl.href;
+                }
+            }
+
+            // Listen for any filter changes
+            document.querySelectorAll('input, select').forEach(el => {
+                if (el.id && (el.id.includes('date') || el.id.includes('filter'))) {
+                    el.addEventListener('change', updateExportLinks);
+                }
+            });
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {

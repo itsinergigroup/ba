@@ -5,8 +5,7 @@
                 <h2 class="font-black text-2xl text-gray-800 dark:text-gray-200 leading-tight uppercase tracking-tight">
                     {{ __('Konfigurasi Jadwal') }}
                 </h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-bold">Atur waktu operasional absensi dan
-                    batas keterlambatan</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-bold">Atur waktu operasional absensi dan syarat minimal jam kerja</p>
             </div>
         </div>
     </x-slot>
@@ -71,27 +70,28 @@
                             </div>
                         </div>
 
-                        <!-- Right Column: Check-in Limit -->
+                        <!-- Right Column: Minimum Work Hours -->
                         <div class="space-y-8">
                             <div>
                                 <h3
                                     class="text-gray-900 dark:text-white font-black uppercase tracking-tight text-lg mb-6 flex items-center gap-3">
                                     <span
                                         class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white text-xs">02</span>
-                                    Batas Keterlambatan
+                                    Aturan Kerja
                                 </h3>
 
                                 <div class="space-y-6">
                                     <div>
                                         <label
-                                            class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Batas
-                                            Check-in (Tepat Waktu)</label>
-                                        <input type="time" name="check_in_limit"
-                                            value="{{ old('check_in_limit', $settings['check_in_limit']) }}"
-                                            class="w-full bg-gray-50 dark:bg-gray-900 border-none focus:ring-4 focus:ring-orange-500/10 rounded-2xl py-4 px-6 font-black text-lg transition shadow-inner">
-                                        <p class="mt-3 text-[10px] text-gray-400 font-medium italic">Check-in setelah
-                                            waktu ini akan otomatis tercatat sebagai "Terlambat".</p>
-                                        @error('check_in_limit')
+                                            class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Syarat Minimal Jam Kerja (Check-out)</label>
+                                        <div class="relative">
+                                            <input type="number" name="minimum_work_hours" min="1" max="24"
+                                                value="{{ old('minimum_work_hours', $settings['minimum_work_hours'] ?? 8) }}"
+                                                class="w-full bg-gray-50 dark:bg-gray-900 border-none focus:ring-4 focus:ring-orange-500/10 rounded-2xl py-4 px-6 font-black text-lg transition shadow-inner">
+                                            <span class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Jam</span>
+                                        </div>
+                                        <p class="mt-3 text-[10px] text-gray-400 font-medium italic">BA tidak akan bisa melakukan Check-out sebelum durasi kerja ini terpenuhi (dihitung sejak Check-in).</p>
+                                        @error('minimum_work_hours')
                                             <p class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-widest">
                                                 {{ $message }}</p>
                                         @enderror

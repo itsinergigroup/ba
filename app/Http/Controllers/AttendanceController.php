@@ -40,6 +40,10 @@ class AttendanceController extends Controller
             return redirect()->route('attendance.index')->with('error', "Mohon maaf, absensi tidak tersedia. Hari ini bukan hari kerja.");
         }
 
+        if ($user->hasApprovedDayOffToday()) {
+            return redirect()->route('attendance.index')->with('success', "Hari ini adalah hari libur (Day-Off) Anda yang telah disetujui. Anda tidak perlu melakukan absensi hari ini.");
+        }
+
         if ($user->hasFinishedAttendanceToday()) {
             $startTime = Setting::getValue('attendance_start_time', '07:00');
             return redirect()->route('attendance.index')->with('success', "Terima kasih, Anda telah menyelesaikan absensi hari ini. Menu absensi akan kembali tersedia besok pagi mulai pukul $startTime WIB.");
@@ -52,7 +56,27 @@ class AttendanceController extends Controller
 
         $nextType = ($lastAttendance && $lastAttendance->type === 'check-in') ? 'check-out' : 'check-in';
 
-        return view('attendance.create', compact('outlets', 'nextType', 'lastAttendance'));
+        $durationStatus = 'allowed';
+        $remainingMinutes = 0;
+        $minHours = (int) Setting::getValue('minimum_work_hours', 8);
+
+        if ($nextType === 'check-out') {
+            $checkIn = $user->getTodayCheckIn();
+            if ($checkIn) {
+                $checkInTime = \Carbon\Carbon::parse($checkIn->date . ' ' . $checkIn->time, 'Asia/Jakarta');
+                $durationInMinutes = now('Asia/Jakarta')->diffInMinutes($checkInTime);
+                
+                $minHours = (int) Setting::getValue('minimum_work_hours', 8);
+                $minMinutes = $minHours * 60;
+
+                if ($durationInMinutes < $minMinutes) { // Dynamic limit
+                    $durationStatus = 'blocked';
+                    $remainingMinutes = $minMinutes - $durationInMinutes;
+                }
+            }
+        }
+
+        return view('attendance.create', compact('outlets', 'nextType', 'lastAttendance', 'durationStatus', 'remainingMinutes', 'minHours'));
     }
 
     public function store(Request $request)
@@ -78,9 +102,32 @@ class AttendanceController extends Controller
         $startTime = Setting::getValue('attendance_start_time', '07:00');
         $endTime = Setting::getValue('attendance_end_time', '17:00');
 
+        if (auth()->user()->hasApprovedDayOffToday()) {
+            return back()->with('error', "Mohon maaf, Anda tidak dapat melakukan absensi pada hari libur (Day-Off) yang telah disetujui.");
+        }
+
         // Shift validation
         if ($currentHour < $startTime || $currentHour > $endTime) {
             return back()->with('error', "Mohon maaf, absensi saat ini tidak dapat dilakukan. Sesuai ketentuan, absensi hanya tersedia antara pukul $startTime hingga $endTime WIB. (Waktu saat ini: $currentHour)");
+        }
+
+        if ($request->type === 'check-out') {
+            $checkIn = auth()->user()->getTodayCheckIn();
+            if ($checkIn) {
+                $checkInTime = \Carbon\Carbon::parse($checkIn->date . ' ' . $checkIn->time, 'Asia/Jakarta');
+                $durationInMinutes = now('Asia/Jakarta')->diffInMinutes($checkInTime);
+                
+                $minHours = (int) Setting::getValue('minimum_work_hours', 8);
+                $minMinutes = $minHours * 60;
+
+                if ($durationInMinutes < $minMinutes) {
+                    $remainingHours = floor(( $minMinutes - $durationInMinutes) / 60);
+                    $remainingMins = ( $minMinutes - $durationInMinutes) % 60;
+                    return back()->with('error', "Anda belum mencapai batas minimal waktu kerja {$minHours} jam. Sisa waktu: {$remainingHours} jam {$remainingMins} menit.");
+                }
+            } else {
+                 return back()->with('error', "Data check-in hari ini tidak ditemukan.");
+            }
         }
 
         // Prevent duplicate check-in or multiple check-outs for the same day
@@ -101,34 +148,21 @@ class AttendanceController extends Controller
         $imageName = 'attendance/' . auth()->id() . '_' . time() . '.jpg';
         \Storage::disk('public')->put($imageName, base64_decode($photoData));
 
-        $lateMinutes = 0;
-        if ($request->type === 'check-in') {
-            $limitTime = Setting::getValue('check_in_limit', '08:00');
-            $limitArray = explode(':', $limitTime);
-            $checkInLimit = $currentTime->copy()->setTime($limitArray[0], $limitArray[1] ?? 0, 0);
-
-            if ($currentTime->greaterThan($checkInLimit)) {
-                $lateMinutes = abs($currentTime->diffInMinutes($checkInLimit));
-            }
-        }
-
         Attendance::create([
             'user_id' => auth()->id(),
             'outlet_id' => $request->outlet_id ?: null,
             'type' => $request->type,
-            'late_minutes' => $lateMinutes,
+            'late_minutes' => 0,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'photo_path' => $imageName,
             'date' => $currentTime->toDateString(),
             'time' => $currentTime->toTimeString(),
-            'status' => $lateMinutes > 0 ? 'late' : 'present',
+            'status' => 'present',
         ]);
 
         if ($request->type === 'check-in') {
-            $message = $lateMinutes > 0
-                ? "Check-in berhasil tercatat. Anda terlambat $lateMinutes menit, tetap semangat bekerja!"
-                : "Check-in berhasil tercatat. Selamat bekerja dan semoga harimu menyenangkan!";
+            $message = "Check-in berhasil tercatat. Selamat bekerja dan semoga harimu menyenangkan!";
         } else {
             $message = "Check-out berhasil tercatat. Terima kasih atas kerja keras Anda hari ini!";
         }

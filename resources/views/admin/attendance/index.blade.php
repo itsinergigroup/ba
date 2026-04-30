@@ -24,7 +24,7 @@
     </x-slot>
 
     <div class="py-12 bg-gray-50/50 dark:bg-gray-950/20 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Filter Section -->
             <div
                 class="mb-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-xl shadow-gray-200/40 dark:shadow-none border border-gray-100 dark:border-gray-700">
@@ -146,17 +146,6 @@
                                                     class="text-[10px] text-gray-400 font-black uppercase tracking-widest">
                                                     {{ date('d M Y', strtotime($atten->date)) }}
                                                 </span>
-                                                @if($atten->type === 'check-in')
-                                                    @if($atten->late_minutes > 0)
-                                                        <span class="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm">
-                                                            Terlambat 
-                                                            @php $h = floor($atten->late_minutes / 60); $m = $atten->late_minutes % 60; @endphp
-                                                            {{ $h > 0 ? $h . 'j ' : '' }}{{ $m > 0 ? $m . 'm' : '' }}
-                                                        </span>
-                                                    @else
-                                                        <span class="bg-green-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm">Tepat Waktu</span>
-                                                    @endif
-                                                @endif
                                             </div>
                                         </td>
                                         <td class="py-6 px-6 text-center">
