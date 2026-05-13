@@ -1,0 +1,113 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('Master Produk') }}
+            </h2>
+            <a href="{{ route('admin.products.create') }}"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded text-sm">
+                Tambah Produk Baru
+            </a>
+        </div>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            @if(session('success'))
+                <x-alert type="success" :message="session('success')" />
+            @endif
+
+            @if(session('error'))
+                <x-alert type="error" :message="session('error')" />
+            @endif
+
+
+            <!-- Filter Section -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <form action="{{ route('admin.products.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div class="md:col-span-2">
+                            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cari Produk</label>
+                            <input type="text" id="search" name="search" value="{{ request('search') }}" 
+                                placeholder="Cari nama produk atau brand..." 
+                                class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="brand_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
+                            <select id="brand_id" name="brand_id" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                <option value="">Semua Brand</option>
+                                @foreach($brands as $brand)
+                                    <option value="{{ $brand->id }}" {{ request('brand_id') == $brand->id ? 'selected' : '' }}>
+                                        {{ $brand->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition text-sm font-medium">
+                                Terapkan Filter
+                            </button>
+                            @if(request()->anyFilled(['search', 'brand_id']))
+                                <a href="{{ route('admin.products.index') }}" class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md transition text-sm font-medium">
+                                    Reset
+                                </a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
+                                    <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Brand</th>
+                                    <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Nama Produk</th>
+                                    <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">HET</th>
+
+                                    <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                @forelse($products as $product)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                        <td class="py-3 px-4 font-bold text-sm">{{ $product->brand->name }}</td>
+                                        <td class="py-3 px-4 text-sm">{{ $product->name }}</td>
+                                        <td class="py-3 px-4 text-right text-sm">Rp {{ number_format($product->het) }}</td>
+
+                                        <td class="py-3 px-4 text-right">
+                                            <div class="flex justify-end gap-3 text-sm">
+                                                <a href="{{ route('admin.products.edit', $product->id) }}"
+                                                    class="text-indigo-600 hover:text-indigo-900 font-medium">Ubah</a>
+                                                <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST"
+                                                    onsubmit="return confirm('Apakah Anda yakin?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900 font-medium">Hapus</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="py-12 text-center text-gray-500 dark:text-gray-400 italic">
+                                            Data produk tidak ditemukan.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="mt-6">
+                        {{ $products->links() }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
