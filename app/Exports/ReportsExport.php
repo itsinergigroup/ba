@@ -26,7 +26,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
 
     public function collection()
     {
-        $query = Report::with(['user', 'distributor', 'province', 'city', 'outlet', 'brand', 'product']);
+        $query = Report::with(['user.rbs', 'distributor', 'province', 'city', 'outlet', 'brand', 'product']);
 
         if ($this->request->filled('start_date')) {
             $query->whereDate('date', '>=', $this->request->start_date);
@@ -90,13 +90,14 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
             'ID',
             'ID Transaksi',
             'Tanggal',
-            'BA Name',
+            'Nama BA',
+            'RBS / Supervisor',
             'Distributor',
             'Account Type',
             'Channel',
             'Provinsi',
             'Kota',
-            'Outlet',
+            'Toko',
             'Brand',
             'Product',
             'QTY',
@@ -123,6 +124,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
                 '',
                 '',
                 '',
+                '',
                 $report->total_qty,
                 '',
                 '',
@@ -136,6 +138,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $report->group_id ?? '-',
             $report->date,
             optional($report->user)->name ?? 'N/A',
+            optional($report->user->rbs)->name ?? '-',
             optional($report->distributor)->name ?? 'N/A',
             $report->account_type ?? '-',
             $report->channel ?? '-',

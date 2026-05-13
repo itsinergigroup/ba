@@ -80,9 +80,63 @@
                         <input type="hidden" name="longitude" id="longitude">
                         <input type="hidden" name="photo" id="photoData">
 
-                        {{-- Section Pilih Toko dihapus sesuai permintaan --}}
-                        <input type="hidden" name="outlet_id" id="outlet_id"
-                            value="{{ $outlets->count() === 1 ? $outlets->first()->id : '' }}">
+                        @if($nextType === 'check-in')
+                            @if($outlets->isEmpty())
+                                <div class="mb-10 p-6 bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-200 dark:border-red-800 rounded-[2rem] text-center">
+                                    <div class="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                    </div>
+                                    <h4 class="font-black text-red-800 dark:text-red-400 uppercase tracking-tight mb-2">Toko Belum Ditugaskan</h4>
+                                    <p class="text-sm text-red-600 dark:text-red-300">Akun Anda belum memiliki daftar toko penugasan. Silakan hubungi admin untuk melakukan pemetaan toko sebelum melakukan absensi.</p>
+                                </div>
+                            @endif
+
+                            <div class="mb-8">
+                                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-1.5 rounded-full mb-4 w-fit mx-auto">
+                                    Pilih Toko yang Ditugaskan
+                                </label>
+                                <div class="relative group">
+                                    <select name="outlet_id" id="outlet_id" required
+                                        class="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-0 transition-all appearance-none shadow-sm">
+                                        <option value="" disabled {{ $outlets->count() !== 1 ? 'selected' : '' }}>-- Pilih Toko --</option>
+                                        @foreach($outlets as $outlet)
+                                            <option value="{{ $outlet->id }}" {{ $outlets->count() === 1 ? 'selected' : '' }}>
+                                                {{ $outlet->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-[10px] text-gray-400 font-medium italic text-center">BA wajib memilih toko lokasi penugasan hari ini.</p>
+                            </div>
+                        @else
+                            {{-- Untuk Check-out, ambil outlet dari check-in terakhir --}}
+                            <input type="hidden" name="outlet_id" value="{{ $lastAttendance ? $lastAttendance->outlet_id : '' }}">
+                            <div class="mb-8">
+                                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 bg-gray-50 dark:bg-gray-700 px-4 py-1.5 rounded-full mb-4 w-fit mx-auto">
+                                    Toko Saat Check-in
+                                </label>
+                                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600">
+                                    <div class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                    </div>
+                                    <p class="font-bold text-gray-700 dark:text-gray-300">{{ $lastAttendance && $lastAttendance->outlet ? $lastAttendance->outlet->name : 'Toko tidak terdata' }}</p>
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Camera Preview -->
                         <div class="mb-10 text-center">
@@ -571,14 +625,20 @@
             function checkReady() {
                 const hasPhoto = document.getElementById('photoData').value !== "";
                 const hasLocation = document.getElementById('latitude').value !== "";
+                const outletInput = document.getElementById('outlet_id');
+                const hasOutlet = outletInput ? outletInput.value !== "" : true;
                 let isBlocked = false;
                 
                 @if($nextType === 'check-out' && $durationStatus === 'blocked')
                     isBlocked = true;
                 @endif
 
-                submitBtn.disabled = !(hasPhoto && hasLocation) || isBlocked;
+                submitBtn.disabled = !(hasPhoto && hasLocation && hasOutlet) || isBlocked;
             }
+
+            @if($nextType === 'check-in')
+                document.getElementById('outlet_id').addEventListener('change', checkReady);
+            @endif
 
             // Auto-trigger if permissions allowed
             window.addEventListener('load', () => {

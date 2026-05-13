@@ -71,7 +71,7 @@
                             <div>
                                 <h4
                                     class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 border-b pb-2">
-                                    Informasi BA & Distributor</h4>
+                                    Informasi BA</h4>
                                 <div class="space-y-4">
                                     <div class="flex items-start gap-4">
                                         <div class="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl">
@@ -84,9 +84,18 @@
                                         </div>
                                         <div>
                                             <p class="text-xs text-gray-500 font-medium">Beauty Advisor</p>
-                                            <p class="text-gray-900 dark:text-gray-100 font-bold text-lg">
+                                            <p class="text-gray-900 dark:text-gray-100 font-bold text-lg leading-tight">
                                                 {{ $mainReport->user->name }}
                                             </p>
+                                            <div class="mt-1 flex items-center gap-1.5">
+                                                <span
+                                                    class="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">Supervisor
+                                                    (RBS)</span>
+                                                <p
+                                                    class="text-[10px] text-gray-600 dark:text-gray-400 font-bold italic">
+                                                    {{ $mainReport->user->rbs ? $mainReport->user->rbs->name : 'N/A' }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="flex items-start gap-4">
@@ -105,7 +114,8 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="mt-4 px-4 py-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl grid grid-cols-2 gap-4 border border-gray-100 dark:border-gray-700">
+                                    <div
+                                        class="mt-4 px-4 py-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl grid grid-cols-2 gap-4 border border-gray-100 dark:border-gray-700">
                                         <div>
                                             <p class="text-[10px] text-gray-500 uppercase font-black">Account Type</p>
                                             <p class="font-bold text-indigo-600">{{ $mainReport->account_type }}</p>

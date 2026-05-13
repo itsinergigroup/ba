@@ -44,8 +44,15 @@ class BrandController extends Controller
 
     public function destroy(string $id)
     {
-        $brand = \App\Models\Brand::findOrFail($id);
-        $brand->delete();
-        return redirect()->route('admin.brands.index')->with('success', 'Brand berhasil dihapus.');
+        try {
+            $brand = \App\Models\Brand::findOrFail($id);
+            $brand->delete();
+            return redirect()->route('admin.brands.index')->with('success', 'Brand berhasil dihapus.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() == "23000") {
+                return redirect()->route('admin.brands.index')->with('error', 'Brand tidak dapat dihapus karena masih digunakan oleh data lain.');
+            }
+            throw $e;
+        }
     }
 }

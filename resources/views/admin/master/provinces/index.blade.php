@@ -14,14 +14,13 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             @if(session('success'))
-                <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 shadow-sm rounded-r-lg flex items-center gap-3 animate-fade-in"
-                    role="alert">
-                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span class="font-medium">{{ session('success') }}</span>
-                </div>
+                <x-alert type="success" :message="session('success')" />
             @endif
+
+            @if(session('error'))
+                <x-alert type="error" :message="session('error')" />
+            @endif
+
 
             <!-- Filter Section -->
             <div

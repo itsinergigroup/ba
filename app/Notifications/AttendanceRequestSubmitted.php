@@ -38,13 +38,15 @@ class AttendanceRequestSubmitted extends Notification
      */
     public function toArray(object $notifiable): array
     {
+        $requestType = $this->request->type === 'day-off' ? 'Day Off' : 'lupa absen';
+
         return [
             'request_id' => $this->request->id,
             'user_name' => $this->request->user->name,
             'type' => $this->request->type,
             'date' => $this->request->date,
             'reason' => $this->request->reason,
-            'message' => 'Pengajuan lupa absen baru dari ' . $this->request->user->name,
+            'message' => "Pengajuan {$requestType} baru dari " . $this->request->user->name,
             'url' => route('admin.attendance-requests.index'),
         ];
     }

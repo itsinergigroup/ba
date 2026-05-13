@@ -72,41 +72,85 @@
                         </div>
                     </div>
 
-                    <div id="area_group" class="mt-4">
-                        <x-input-label for="areas" :value="__('Area')" />
-                        @php 
-                            $selectedAreas = old('areas', []);
-                            $areaOptions = $areas->map(fn($a) => $a->name)->toArray();
-                        @endphp
-                        <div x-data="{ 
-                            openArea: false, 
-                            searchArea: '',
-                            selectedAreas: {{ json_encode($selectedAreas) }},
-                            areaOptions: {{ json_encode($areaOptions) }},
-                            get filteredAreas() {
-                                if (this.searchArea === '') return this.areaOptions;
-                                return this.areaOptions.filter(a => a.toLowerCase().includes(this.searchArea.toLowerCase()));
+                    <div id="area_group" class="mt-4" x-data="{ 
+                        openArea: false, 
+                        searchArea: '',
+                        selectedAreas: {{ json_encode(old('areas', [])) }},
+                        areaOptions: {{ json_encode($areas->map(fn($a) => $a->name)->toArray()) }},
+                        get filteredAreas() {
+                            if (this.searchArea === '') return this.areaOptions.filter(a => !this.selectedAreas.includes(a));
+                            return this.areaOptions.filter(a => 
+                                a.toLowerCase().includes(this.searchArea.toLowerCase()) && 
+                                !this.selectedAreas.includes(a)
+                            );
+                        },
+                        addArea(area) {
+                            if (!this.selectedAreas.includes(area)) {
+                                this.selectedAreas.push(area);
                             }
-                        }" class="relative mt-2">
-                            <button @click="openArea = !openArea" type="button" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm pl-3 pr-10 py-2.5 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700 dark:text-gray-300 sm:text-sm">
-                                <span class="block truncate" x-text="selectedAreas.length > 0 ? selectedAreas.length + ' Area dipilih' : '-- Pilih Area --'"></span>
-                                <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </span>
-                            </button>
-                            <div x-show="openArea" @click.away="openArea = false" style="display: none;" class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                                <div class="p-2 border-b dark:border-gray-700">
-                                    <input type="text" x-model="searchArea" placeholder="Cari area..." class="w-full text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            this.searchArea = '';
+                            this.openArea = false;
+                        },
+                        removeArea(index) {
+                            this.selectedAreas.splice(index, 1);
+                        }
+                    }">
+                        <x-input-label :value="__('Area Penugasan')" />
+                        
+                        <!-- Selected Areas List -->
+                        <div class="mt-2 flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 dark:bg-gray-900/50 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                            <template x-for="(area, index) in selectedAreas" :key="area">
+                                <div class="inline-flex items-center bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-xs font-medium border border-indigo-200 dark:border-indigo-800 transition-all hover:scale-105">
+                                    <span x-text="area"></span>
+                                    <input type="hidden" name="areas[]" :value="area">
+                                    <button type="button" @click="removeArea(index)" class="ml-2 hover:text-red-500 focus:outline-none">
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
                                 </div>
-                                <div class="max-h-60 overflow-auto">
+                            </template>
+                            <div x-show="selectedAreas.length === 0" class="text-gray-400 text-xs italic flex items-center">
+                                Belum ada area yang dipilih. Klik tombol (+) untuk menambah.
+                            </div>
+                        </div>
+
+                        <!-- Add Button & Popover -->
+                        <div class="relative mt-2">
+                            <button @click="openArea = !openArea" type="button" 
+                                class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Tambah Area
+                            </button>
+
+                            <div x-show="openArea" @click.away="openArea = false" 
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 translate-y-1"
+                                class="absolute z-50 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg overflow-hidden" 
+                                style="display: none;">
+                                <div class="p-2 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                                    <input type="text" x-model="searchArea" placeholder="Cari area..." 
+                                        class="w-full text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div class="max-h-48 overflow-y-auto p-1">
                                     <template x-for="area in filteredAreas" :key="area">
-                                        <label class="relative flex items-center py-2 px-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                            <input type="checkbox" name="areas[]" :value="area" x-model="selectedAreas" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded shadow-sm">
-                                            <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300" x-text="area"></span>
-                                        </label>
+                                        <button type="button" @click="addArea(area)" 
+                                            class="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition-colors flex items-center justify-between group">
+                                            <span x-text="area"></span>
+                                            <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                        </button>
                                     </template>
+                                    <div x-show="filteredAreas.length === 0" class="px-3 py-4 text-center">
+                                        <p class="text-xs text-gray-500 italic">Tidak ada area lain yang tersedia</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

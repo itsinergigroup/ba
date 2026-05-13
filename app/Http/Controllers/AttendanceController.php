@@ -82,7 +82,7 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'outlet_id' => 'nullable|exists:outlets,id',
+            'outlet_id' => $request->type === 'check-in' ? 'required|exists:outlets,id' : 'nullable|exists:outlets,id',
             'type' => 'required|in:check-in,check-out',
             'latitude' => 'required',
             'longitude' => 'required',

@@ -16,10 +16,13 @@
             <div
                 class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg text-gray-900 dark:text-gray-100 p-6">
                 @if(session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
-                        {{ session('success') }}
-                    </div>
+                    <x-alert type="success" :message="session('success')" />
                 @endif
+
+                @if(session('error'))
+                    <x-alert type="error" :message="session('error')" />
+                @endif
+
 
                 <table class="w-full text-left border-collapse">
                     <thead>

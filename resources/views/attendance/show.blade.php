@@ -87,7 +87,10 @@
 
                             <div class="space-y-6">
                                 <div class="pb-6 border-b border-gray-50 dark:border-gray-700">
-                                    <div class="font-black text-gray-800 dark:text-gray-100 text-lg leading-tight">{{ $attendance->outlet->name ?? 'LOKASI UMUM' }}</div>
+                                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Toko Penugasan</div>
+                                    <div class="font-black text-gray-800 dark:text-gray-100 text-lg leading-tight">
+                                        {{ $attendance->outlet->name ?? 'LOKASI UMUM' }}
+                                    </div>
                                     
                                     <!-- Embedded Leaflet Map -->
                                     <div id="map" class="mt-4"></div>

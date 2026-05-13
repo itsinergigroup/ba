@@ -189,12 +189,12 @@ class ReportController extends Controller
         // If the report has a group_id, fetch all items in that group
         if ($report->group_id) {
             $reports = Report::where('group_id', $report->group_id)
-                ->with(['distributor', 'outlet', 'brand', 'product', 'user'])
+                ->with(['distributor', 'outlet', 'brand', 'product', 'user.rbs'])
                 ->get();
             $mainReport = $reports->first();
         } else {
             // Fallback for old reports without group_id
-            $reports = collect([$report->load(['distributor', 'outlet', 'brand', 'product', 'user'])]);
+            $reports = collect([$report->load(['distributor', 'outlet', 'brand', 'product', 'user.rbs'])]);
             $mainReport = $report;
         }
 
