@@ -90,4 +90,61 @@
             </button>
         </div>
     </form>
+
+    {{-- PWA Install Button --}}
+    <div id="install-button-container" class="hidden mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+        <p
+            class="text-xs text-center text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-widest font-bold opacity-70">
+            Aplikasi Belum Terinstal?
+        </p>
+        <button id="install-button" type="button"
+            class="w-full flex items-center justify-center py-3 px-4 border border-indigo-200 dark:border-indigo-800 rounded-xl shadow-sm text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform active:scale-[0.98] transition duration-150 ease-in-out group">
+            <svg class="w-5 h-5 mr-2 -ml-1 group-hover:animate-bounce" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            {{ __('Install Aplikasi') }}
+        </button>
+    </div>
+
+    @push('scripts')
+        <script>
+            let deferredPrompt;
+            const installContainer = document.getElementById('install-button-container');
+            const installButton = document.getElementById('install-button');
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent Chrome 67 and earlier from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later.
+                deferredPrompt = e;
+                // Update UI to notify the user they can add to home screen
+                installContainer.classList.remove('hidden');
+
+                installButton.addEventListener('click', (e) => {
+                    // hide our install button
+                    installContainer.classList.add('hidden');
+                    // Show the prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the A2HS prompt');
+                        } else {
+                            console.log('User dismissed the A2HS prompt');
+                            // Show the button again if they dismissed? 
+                            // Maybe better to keep it hidden until next reload to avoid annoyance
+                        }
+                        deferredPrompt = null;
+                    });
+                });
+            });
+
+            window.addEventListener('appinstalled', (evt) => {
+                console.log('PWA was installed');
+                installContainer.classList.add('hidden');
+            });
+        </script>
+    @endpush
 </x-guest-layout>
