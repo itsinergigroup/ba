@@ -4,7 +4,7 @@
             Selamat Datang
         </h2>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Silakan login ke akun <span class="font-bold text-indigo-600 italic">System Reporting BA</span> Anda
+            Silakan login ke akun Anda <span class="font-bold text-indigo-600 italic">System Reporting BA</span> Anda
         </p>
     </div>
 
