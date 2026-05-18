@@ -65,6 +65,11 @@
                                             <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold {{ $typeColor }} border uppercase tracking-wider">
                                                 {{ str_replace('-', ' ', $request->type) }}
                                             </span>
+                                            @if($request->type !== 'day-off' && $request->outlet)
+                                                <span class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mt-1">
+                                                    Toko: {{ $request->outlet->name }}
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="py-5 px-6">
                                             <p class="text-xs text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ $request->reason }}">

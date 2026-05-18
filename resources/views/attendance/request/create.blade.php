@@ -37,6 +37,19 @@
                             </div>
                         </div>
 
+                        <!-- Toko Penugasan -->
+                        <div class="space-y-2" id="outlet_container">
+                            <label for="outlet_id" class="text-xs font-bold text-gray-500 uppercase tracking-widest">Pilih Toko Penugasan</label>
+                            <select name="outlet_id" id="outlet_id"
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm shadow-inner font-bold text-gray-950 dark:text-gray-100">
+                                <option value="" disabled selected>-- Pilih Toko --</option>
+                                @foreach($outlets as $outlet)
+                                    <option value="{{ $outlet->id }}">{{ $outlet->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('outlet_id') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Tanggal -->
                             <div class="space-y-2">
@@ -103,18 +116,26 @@
                 const timeContainer = document.getElementById('time_container');
                 const timeInput = document.getElementById('time');
                 const dateInput = document.getElementById('date');
+                const outletContainer = document.getElementById('outlet_container');
+                const outletSelect = document.getElementById('outlet_id');
 
                 if (type === 'day-off') {
                     timeContainer.style.display = 'none';
                     document.getElementById('photo_container').style.display = 'none';
+                    if (outletContainer) outletContainer.style.display = 'none';
+                    
                     timeInput.removeAttribute('required');
                     document.getElementById('photo').removeAttribute('required');
+                    if (outletSelect) outletSelect.removeAttribute('required');
                     dateInput.removeAttribute('max'); // allow future dates
                 } else {
                     timeContainer.style.display = 'block';
                     document.getElementById('photo_container').style.display = 'block';
+                    if (outletContainer) outletContainer.style.display = 'block';
+                    
                     timeInput.setAttribute('required', 'required');
                     document.getElementById('photo').setAttribute('required', 'required');
+                    if (outletSelect) outletSelect.setAttribute('required', 'required');
                     dateInput.setAttribute('max', '{{ date("Y-m-d") }}'); // restrict to today/past
                 }
             }

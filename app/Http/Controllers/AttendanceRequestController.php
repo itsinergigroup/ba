@@ -31,7 +31,8 @@ class AttendanceRequestController extends Controller
      */
     public function create()
     {
-        return view('attendance.request.create');
+        $outlets = auth()->user()->outlets;
+        return view('attendance.request.create', compact('outlets'));
     }
 
     /**
@@ -50,6 +51,7 @@ class AttendanceRequestController extends Controller
         } else {
             $rules['date'] = 'required|date|before_or_equal:today';
             $rules['time'] = 'required';
+            $rules['outlet_id'] = 'required|exists:outlets,id';
         }
 
         $request->validate($rules);
@@ -61,6 +63,7 @@ class AttendanceRequestController extends Controller
 
         $attendanceRequest = AttendanceRequest::create([
             'user_id' => auth()->id(),
+            'outlet_id' => $request->type === 'day-off' ? null : $request->outlet_id,
             'type' => $request->type,
             'date' => $request->date,
             'time' => $request->time ?? '00:00:00',
