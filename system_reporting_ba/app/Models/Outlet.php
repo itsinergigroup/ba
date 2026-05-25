@@ -9,7 +9,7 @@ class Outlet extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'address', 'area_id'];
+    protected $fillable = ['name', 'address', 'area_id', 'channel', 'jenis_akun'];
 
     public function area()
     {

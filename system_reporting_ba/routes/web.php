@@ -12,7 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     // BA & Viewer Specific Routes
-    Route::middleware(['role:admin,ba,rbs,view user only'])->group(function () {
+    Route::middleware(['role:admin,ba,rbs,kam,view user only'])->group(function () {
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [\App\Http\Controllers\ReportController::class, 'export'])->name('reports.export');
         

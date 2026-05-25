@@ -101,8 +101,9 @@
                                         class="w-full pl-10 pr-8 py-2.5 text-sm bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 text-gray-700 dark:text-gray-200 appearance-none cursor-pointer transition-all">
                                         <option value="">— Semua Peran —</option>
                                         <option value="admin"          {{ request('role') === 'admin'          ? 'selected' : '' }}>Admin</option>
-                                        <option value="ba"             {{ request('role') === 'ba'             ? 'selected' : '' }}>BA (Brand Ambassador)</option>
+                                        <option value="ba"             {{ request('role') === 'ba'             ? 'selected' : '' }}>BA (Brand Advisor)</option>
                                         <option value="rbs"            {{ request('role') === 'rbs'            ? 'selected' : '' }}>RBS</option>
+                                        <option value="kam"           {{ request('role') === 'kam'           ? 'selected' : '' }}>KAM (Key Account Manager)</option>
                                         <option value="view user only" {{ request('role') === 'view user only' ? 'selected' : '' }}>View User Only</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">

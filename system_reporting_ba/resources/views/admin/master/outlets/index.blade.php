@@ -16,7 +16,9 @@
             name: '',
             area: '',
             region: '',
-            address: ''
+            address: '',
+            channel: '',
+            jenis_akun: ''
         }
     }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -130,7 +132,10 @@
                                         Area</th>
                                     <th
                                         class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
-                                        Alamat</th>
+                                        Channel</th>
+                                    <th
+                                        class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+                                        Jenis Akun</th>
                                     <th
                                         class="py-4 px-8 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 text-right">
                                         Manajemen Aksi</th>
@@ -171,8 +176,25 @@
                                                 {{ $outlet->area->name ?? '-' }}
                                             </span>
                                         </td>
-                                        <td class="py-5 px-6 text-sm text-gray-600 dark:text-gray-400">
-                                            {{ $outlet->address ?? '-' }}
+                                        <td class="py-5 px-6">
+                                            @if($outlet->channel)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                                    {{ $outlet->channel === 'Direct' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' }}">
+                                                    {{ $outlet->channel }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400 text-xs">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-5 px-6">
+                                            @if($outlet->jenis_akun)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                                    {{ $outlet->jenis_akun === 'GT' ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' }}">
+                                                    {{ $outlet->jenis_akun }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400 text-xs">-</span>
+                                            @endif
                                         </td>
                                         <td class="py-5 px-8">
                                             <div class="flex justify-end items-center gap-2">
@@ -181,7 +203,9 @@
                                                         name: '{{ addslashes($outlet->name) }}', 
                                                         area: '{{ $outlet->area->name ?? '-' }}', 
                                                         region: '{{ $outlet->area->region->name ?? '-' }}', 
-                                                        address: '{{ addslashes($outlet->address ?? '-') }}' 
+                                                        address: '{{ addslashes($outlet->address ?? '-') }}',
+                                                        channel: '{{ $outlet->channel ?? '-' }}',
+                                                        jenis_akun: '{{ $outlet->jenis_akun ?? '-' }}'
                                                     }; $dispatch('open-modal', 'show-outlet-modal')"
                                                     class="p-2 text-emerald-600 hover:bg-emerald-600 hover:text-white dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg transition-all shadow-sm border border-emerald-100 dark:border-emerald-900/50"
                                                     title="Lihat Detail">
@@ -270,26 +294,30 @@
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-6">
-                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Nama Outlet</label>
-                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.name"></p>
-                        </div>
-                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Area</label>
-                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.area"></p>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Nama Outlet</label>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.name"></p>
                     </div>
-                    <div class="space-y-6">
-                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Region</label>
-                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.region"></p>
-                        </div>
-                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Alamat</label>
-                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.address"></p>
-                        </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Area</label>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.area"></p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Region</label>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.region"></p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Alamat</label>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.address"></p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Channel</label>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.channel"></p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">Jenis Akun</label>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="selectedOutlet.jenis_akun"></p>
                     </div>
                 </div>
 

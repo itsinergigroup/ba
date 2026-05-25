@@ -39,7 +39,7 @@ class DashboardController extends Controller
 
         $reports = (clone $query)->with(['user', 'distributor', 'outlet', 'brand', 'product'])
             ->latest()
-            ->paginate(10, ['*'], 'reports_page');
+            ->paginate(15, ['*'], 'reports_page');
 
         // Performance / Summary per BA
         $ba_summary = Report::query()

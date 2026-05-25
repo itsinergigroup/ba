@@ -115,7 +115,7 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <p class="text-xs text-gray-500 font-medium">Supervisor (RBS)</p>
+                                            <p class="text-xs text-gray-500 font-medium">Atasan</p>
                                             <p class="text-gray-900 dark:text-gray-100 font-bold">
                                                 {{ $mainReport->user->rbs ? $mainReport->user->rbs->name : 'N/A' }}
                                             </p>
