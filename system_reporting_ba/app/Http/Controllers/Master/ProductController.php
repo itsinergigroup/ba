@@ -50,6 +50,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'brand_id' => 'required|exists:brands,id',
             'het' => 'required|numeric|min:0',
+            'barcode' => 'nullable|string|max:50|unique:products,barcode',
         ]);
         \App\Models\Product::create($request->all());
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
@@ -74,6 +75,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'brand_id' => 'required|exists:brands,id',
             'het' => 'required|numeric|min:0',
+            'barcode' => 'nullable|string|max:50|unique:products,barcode,' . $product->id,
         ]);
         $product->update($request->all());
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui.');

@@ -32,6 +32,7 @@
                             required onchange="toggleFields(this.value)">
                             <option value="ba" {{ old('role', $user->role) == 'ba' ? 'selected' : '' }}>Beauty Advisor (BA)</option>
                             <option value="rbs" {{ old('role', $user->role) == 'rbs' ? 'selected' : '' }}>RBS</option>
+                            <option value="kam" {{ old('role', $user->role) == 'kam' ? 'selected' : '' }}>KAM (Key Account Manager)</option>
                             <option value="view user only" {{ old('role', $user->role) == 'view user only' ? 'selected' : '' }}>View User Only</option>
                             <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
@@ -61,7 +62,7 @@
                             <x-input-error :messages="$errors->get('region')" class="mt-2" />
                         </div>
                         <div class="md:col-span-2">
-                            <x-input-label for="rbs_id" :value="__('RBS (Atasan)')" />
+                            <x-input-label for="rbs_id" :value="__('ATASAN')" />
                             <select id="rbs_id" name="rbs_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
                                 <option value="">-- Pilih RBS --</option>
                                 @foreach($rbsUsers as $rbs)
@@ -302,8 +303,16 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-8 mb-4">Dokumen Pendukung</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             @foreach(['ktp' => 'Dokumen KTP', 'npwp' => 'Dokumen NPWP', 'kontrak_kerja' => 'Kontrak Kerja', 'ijazah' => 'Ijazah', 'sertifikat' => 'Sertifikat Lainnya'] as $docKey => $docLabel)
+                                @php
+                                    $isDocRequired = in_array($docKey, ['ktp', 'kontrak_kerja']) && !isset($docs[$docKey]);
+                                @endphp
                                 <div class="{{ $docKey == 'sertifikat' ? 'md:col-span-2' : '' }}">
-                                    <x-input-label for="doc_{{ $docKey }}" value="{{ $docLabel }}" />
+                                    <x-input-label for="doc_{{ $docKey }}">
+                                        {{ $docLabel }} 
+                                        @if($isDocRequired)
+                                            <span class="text-red-500">*</span>
+                                        @endif
+                                    </x-input-label>
                                     @if(isset($docs[$docKey]))
                                         <div class="mb-1">
                                             <a href="{{ Storage::url($docs[$docKey]->file_path) }}" target="_blank" class="text-xs text-indigo-600 hover:text-indigo-900 flex items-center gap-1">
@@ -312,7 +321,10 @@
                                             </a>
                                         </div>
                                     @endif
-                                    <input id="doc_{{ $docKey }}" name="documents[{{ $docKey }}]" type="file" accept=".pdf,image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700" />
+                                    <input id="doc_{{ $docKey }}" name="documents[{{ $docKey }}]" type="file" accept=".pdf,image/*" 
+                                        data-has-existing="{{ isset($docs[$docKey]) ? 'true' : 'false' }}"
+                                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700" />
+                                    <x-input-error :messages="$errors->get('documents.' . $docKey)" class="mt-2" />
                                 </div>
                             @endforeach
                         </div>
@@ -354,19 +366,30 @@
             const hiFields = document.getElementById('hierarchy_fields');
             const arGroup = document.getElementById('area_group');
             
+            const docKtp = document.getElementById('doc_ktp');
+            const docKontrak = document.getElementById('doc_kontrak');
+            
             if (role === 'ba') {
                 diGroup.classList.remove('hidden');
                 ouGroup.classList.remove('hidden');
                 baFields.classList.remove('hidden');
                 hiFields.classList.remove('hidden');
                 arGroup.classList.remove('hidden');
+                if (docKtp && docKtp.getAttribute('data-has-existing') !== 'true') docKtp.required = true;
+                if (docKontrak && docKontrak.getAttribute('data-has-existing') !== 'true') docKontrak.required = true;
             } else {
                 diGroup.classList.add('hidden');
                 ouGroup.classList.add('hidden');
                 baFields.classList.add('hidden');
                 hiFields.classList.add('hidden');
                 arGroup.classList.add('hidden');
+                if (docKtp) docKtp.required = false;
+                if (docKontrak) docKontrak.required = false;
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            toggleFields(document.getElementById('role').value);
+        });
     </script>
 </x-app-layout>

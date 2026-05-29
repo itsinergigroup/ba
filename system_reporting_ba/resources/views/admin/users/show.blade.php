@@ -67,7 +67,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p class="text-[10px] text-gray-400 font-bold uppercase">RBS (Atasan)</p>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase">Atasan</p>
                                     <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $user->rbs->name ?? '-' }}</p>
                                 </div>
                                 <div>
@@ -107,7 +107,7 @@
                                 </div>
                                 <div>
                                     <p class="text-[10px] text-gray-400 font-bold uppercase">Tanggal Lahir</p>
-                                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $user->profile->dob ? date('d M Y', strtotime($user->profile->dob)) : '-' }}</p>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ optional($user->profile)->dob ? date('d M Y', strtotime($user->profile->dob)) : '-' }}</p>
                                 </div>
                                 <div>
                                     <p class="text-[10px] text-gray-400 font-bold uppercase">Status Karyawan</p>
@@ -117,7 +117,7 @@
                                 </div>
                                 <div>
                                     <p class="text-[10px] text-gray-400 font-bold uppercase">Tanggal Bergabung</p>
-                                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $user->profile->join_date ? date('d M Y', strtotime($user->profile->join_date)) : '-' }}</p>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ optional($user->profile)->join_date ? date('d M Y', strtotime($user->profile->join_date)) : '-' }}</p>
                                 </div>
                                 <div class="md:col-span-2">
                                     <p class="text-[10px] text-gray-400 font-bold uppercase">Alamat Domisili</p>

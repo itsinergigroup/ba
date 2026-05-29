@@ -91,7 +91,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithSt
             'ID Transaksi',
             'Tanggal',
             'Nama BA',
-            'RBS / Supervisor',
+            'Atasan',
             'Distributor',
             'Account Type',
             'Channel',

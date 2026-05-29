@@ -46,6 +46,28 @@
                         <x-input-error :messages="$errors->get('address')" class="mt-2" />
                     </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <x-input-label for="channel" :value="__('Channel')" />
+                            <select id="channel" name="channel" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <option value="">-- Pilih Channel --</option>
+                                <option value="Direct" {{ old('channel', $outlet->channel) == 'Direct' ? 'selected' : '' }}>Direct</option>
+                                <option value="Indirect" {{ old('channel', $outlet->channel) == 'Indirect' ? 'selected' : '' }}>Indirect</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('channel')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="jenis_akun" :value="__('Jenis Akun')" />
+                            <select id="jenis_akun" name="jenis_akun" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <option value="">-- Pilih Jenis Akun --</option>
+                                <option value="GT" {{ old('jenis_akun', $outlet->jenis_akun) == 'GT' ? 'selected' : '' }}>GT</option>
+                                <option value="MT" {{ old('jenis_akun', $outlet->jenis_akun) == 'MT' ? 'selected' : '' }}>MT</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('jenis_akun')" class="mt-2" />
+                        </div>
+                    </div>
+
                     <div class="flex items-center justify-end mt-6">
                         <a href="{{ route('admin.outlets.index') }}"
                             class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900">Batal</a>

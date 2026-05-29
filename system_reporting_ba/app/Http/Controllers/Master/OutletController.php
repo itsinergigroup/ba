@@ -41,11 +41,13 @@ class OutletController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'area_id' => 'required|exists:areas,id',
+            'name'       => 'required|string|max:255',
+            'address'    => 'required|string',
+            'area_id'    => 'required|exists:areas,id',
+            'channel'    => 'nullable|string|max:100',
+            'jenis_akun' => 'nullable|string|max:100',
         ]);
-        Outlet::create($request->all());
+        Outlet::create($request->only(['name', 'address', 'area_id', 'channel', 'jenis_akun']));
         return redirect()->route('admin.outlets.index')->with('success', 'Toko berhasil ditambahkan.');
     }
 
@@ -60,11 +62,13 @@ class OutletController extends Controller
     {
         $outlet = Outlet::findOrFail($id);
         $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'area_id' => 'required|exists:areas,id',
+            'name'       => 'required|string|max:255',
+            'address'    => 'required|string',
+            'area_id'    => 'required|exists:areas,id',
+            'channel'    => 'nullable|string|max:100',
+            'jenis_akun' => 'nullable|string|max:100',
         ]);
-        $outlet->update($request->all());
+        $outlet->update($request->only(['name', 'address', 'area_id', 'channel', 'jenis_akun']));
         return redirect()->route('admin.outlets.index')->with('success', 'Toko berhasil diperbarui.');
     }
 
