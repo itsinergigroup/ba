@@ -32,6 +32,7 @@
                             required onchange="toggleFields(this.value)">
                             <option value="ba" {{ old('role') == 'ba' ? 'selected' : '' }}>Beauty Advisor (BA)</option>
                             <option value="rbs" {{ old('role') == 'rbs' ? 'selected' : '' }}>RBS</option>
+                            <option value="kam" {{ old('role') == 'kam' ? 'selected' : '' }}>KAM (Key Account Manager)</option>
                             <option value="view user only" {{ old('role') == 'view user only' ? 'selected' : '' }}>View User Only</option>
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
@@ -61,9 +62,9 @@
                             <x-input-error :messages="$errors->get('region')" class="mt-2" />
                         </div>
                         <div class="md:col-span-2">
-                            <x-input-label for="rbs_id" :value="__('RBS (Atasan)')" />
+                            <x-input-label for="rbs_id" :value="__('ATASAN')" />
                             <select id="rbs_id" name="rbs_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                <option value="">-- Pilih RBS --</option>
+                                <option value="">-- Pilih RBS / KAM --</option>
                                 @foreach($rbsUsers as $rbs)
                                     <option value="{{ $rbs->id }}" {{ old('rbs_id') == $rbs->id ? 'selected' : '' }}>{{ $rbs->name }}</option>
                                 @endforeach
@@ -157,7 +158,7 @@
                         <x-input-error :messages="$errors->get('areas')" class="mt-2" />
                     </div>
 
-                    <div id="distributor_group" class="mt-4 {{ in_array(old('role'), ['admin', 'rbs']) ? 'hidden' : '' }}">
+                    <div id="distributor_group" class="mt-4 {{ in_array(old('role'), ['admin', 'rbs', 'kam']) ? 'hidden' : '' }}">
                         <x-input-label for="distributor_id" :value="__('Distributor')" />
                         <select id="distributor_id" name="distributor_id"
                             class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
@@ -169,7 +170,7 @@
                         <x-input-error :messages="$errors->get('distributor_id')" class="mt-2" />
                     </div>
 
-                    <div id="outlet_group" class="mt-4 {{ in_array(old('role'), ['admin', 'rbs']) ? 'hidden' : '' }}">
+                    <div id="outlet_group" class="mt-4 {{ in_array(old('role'), ['admin', 'rbs', 'kam']) ? 'hidden' : '' }}">
                         <x-input-label for="outlets" :value="__('Tugaskan Toko')" />
                         @php 
                             $selectedOutlets = array_map('strval', old('outlets', [])); 
@@ -289,24 +290,33 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-8 mb-4">Dokumen Pendukung</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <x-input-label for="doc_ktp" :value="__('Dokumen KTP')" />
+                                <x-input-label for="doc_ktp">
+                                    Dokumen KTP <span class="text-red-500">*</span>
+                                </x-input-label>
                                 <input id="doc_ktp" name="documents[ktp]" type="file" accept=".pdf,image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700" />
+                                <x-input-error :messages="$errors->get('documents.ktp')" class="mt-2" />
                             </div>
                             <div>
                                 <x-input-label for="doc_npwp" :value="__('Dokumen NPWP')" />
                                 <input id="doc_npwp" name="documents[npwp]" type="file" accept=".pdf,image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700" />
+                                <x-input-error :messages="$errors->get('documents.npwp')" class="mt-2" />
                             </div>
                             <div>
-                                <x-input-label for="doc_kontrak" :value="__('Kontrak Kerja')" />
+                                <x-input-label for="doc_kontrak">
+                                    Kontrak Kerja <span class="text-red-500">*</span>
+                                </x-input-label>
                                 <input id="doc_kontrak" name="documents[kontrak_kerja]" type="file" accept=".pdf,image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700" />
+                                <x-input-error :messages="$errors->get('documents.kontrak_kerja')" class="mt-2" />
                             </div>
                             <div>
                                 <x-input-label for="doc_ijazah" :value="__('Ijazah')" />
                                 <input id="doc_ijazah" name="documents[ijazah]" type="file" accept=".pdf,image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700" />
+                                <x-input-error :messages="$errors->get('documents.ijazah')" class="mt-2" />
                             </div>
                             <div class="md:col-span-2">
                                 <x-input-label for="doc_sertifikat" :value="__('Sertifikat Lainnya')" />
                                 <input id="doc_sertifikat" name="documents[sertifikat]" type="file" accept=".pdf,image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700" />
+                                <x-input-error :messages="$errors->get('documents.sertifikat')" class="mt-2" />
                             </div>
                         </div>
                     </div>
@@ -344,19 +354,30 @@
             const hiFields = document.getElementById('hierarchy_fields');
             const arGroup = document.getElementById('area_group');
             
+            const docKtp = document.getElementById('doc_ktp');
+            const docKontrak = document.getElementById('doc_kontrak');
+            
             if (role === 'ba') {
                 diGroup.classList.remove('hidden');
                 ouGroup.classList.remove('hidden');
                 baFields.classList.remove('hidden');
                 hiFields.classList.remove('hidden');
                 arGroup.classList.remove('hidden');
+                if (docKtp) docKtp.required = true;
+                if (docKontrak) docKontrak.required = true;
             } else {
                 diGroup.classList.add('hidden');
                 ouGroup.classList.add('hidden');
                 baFields.classList.add('hidden');
                 hiFields.classList.add('hidden');
                 arGroup.classList.add('hidden');
+                if (docKtp) docKtp.required = false;
+                if (docKontrak) docKontrak.required = false;
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            toggleFields(document.getElementById('role').value);
+        });
     </script>
 </x-app-layout>

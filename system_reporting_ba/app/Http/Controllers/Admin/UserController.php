@@ -49,7 +49,7 @@ class UserController extends Controller
     public function create()
     {
         $distributors = \App\Models\Distributor::all();
-        $rbsUsers = \App\Models\User::where('role', 'rbs')->orderBy('name')->get();
+        $rbsUsers = \App\Models\User::whereIn('role', ['rbs', 'kam'])->orderBy('name')->get();
         $regions = \App\Models\Region::orderBy('name')->get();
         $areas = \App\Models\Area::orderBy('name')->get();
         return view('admin.users.create', compact('distributors', 'rbsUsers', 'regions', 'areas'));
@@ -61,7 +61,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . \App\Models\User::class],
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,ba,rbs,view user only'],
+            'role' => ['required', 'in:admin,ba,rbs,kam,view user only'],
             'cluster' => ['nullable', 'in:A,B,Area'],
             'region' => ['nullable', 'string', 'max:255'],
             'areas' => ['nullable', 'array'],
@@ -82,9 +82,9 @@ class UserController extends Controller
 
             // Documents Validation
             'documents' => ['nullable', 'array'],
-            'documents.ktp' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
+            'documents.ktp' => ['required_if:role,ba', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
             'documents.npwp' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
-            'documents.kontrak_kerja' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
+            'documents.kontrak_kerja' => ['required_if:role,ba', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
             'documents.ijazah' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
             'documents.sertifikat' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
         ]);
@@ -147,7 +147,7 @@ class UserController extends Controller
     {
         $user = \App\Models\User::with('outlets')->findOrFail($id);
         $distributors = \App\Models\Distributor::all();
-        $rbsUsers = \App\Models\User::where('role', 'rbs')->orderBy('name')->get();
+        $rbsUsers = \App\Models\User::whereIn('role', ['rbs', 'kam'])->orderBy('name')->get();
         $regions = \App\Models\Region::orderBy('name')->get();
         $areas = \App\Models\Area::orderBy('name')->get();
         return view('admin.users.edit', compact('user', 'distributors', 'rbsUsers', 'regions', 'areas'));
@@ -160,7 +160,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'role' => ['required', 'in:admin,ba,rbs,view user only'],
+            'role' => ['required', 'in:admin,ba,rbs,kam,view user only'],
             'cluster' => ['nullable', 'in:A,B,Area'],
             'region' => ['nullable', 'string', 'max:255'],
             'areas' => ['nullable', 'array'],
@@ -181,9 +181,15 @@ class UserController extends Controller
 
             // Documents Validation
             'documents' => ['nullable', 'array'],
-            'documents.ktp' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
+            'documents.ktp' => [
+                \App\Models\EmployeeDocument::where('user_id', $user->id)->where('type', 'ktp')->exists() ? 'nullable' : 'required_if:role,ba',
+                'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'
+            ],
             'documents.npwp' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
-            'documents.kontrak_kerja' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
+            'documents.kontrak_kerja' => [
+                \App\Models\EmployeeDocument::where('user_id', $user->id)->where('type', 'kontrak_kerja')->exists() ? 'nullable' : 'required_if:role,ba',
+                'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'
+            ],
             'documents.ijazah' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
             'documents.sertifikat' => ['nullable', 'file', 'mimes:pdf,jpeg,png,jpg', 'max:5120'],
         ]);

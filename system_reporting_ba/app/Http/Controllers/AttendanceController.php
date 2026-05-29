@@ -64,7 +64,7 @@ class AttendanceController extends Controller
             $checkIn = $user->getTodayCheckIn();
             if ($checkIn) {
                 $checkInTime = \Carbon\Carbon::parse($checkIn->date . ' ' . $checkIn->time, 'Asia/Jakarta');
-                $durationInMinutes = now('Asia/Jakarta')->diffInMinutes($checkInTime);
+                $durationInMinutes = now('Asia/Jakarta')->diffInMinutes($checkInTime, true);
                 
                 $minHours = (int) Setting::getValue('minimum_work_hours', 8);
                 $minMinutes = $minHours * 60;
@@ -115,7 +115,7 @@ class AttendanceController extends Controller
             $checkIn = auth()->user()->getTodayCheckIn();
             if ($checkIn) {
                 $checkInTime = \Carbon\Carbon::parse($checkIn->date . ' ' . $checkIn->time, 'Asia/Jakarta');
-                $durationInMinutes = now('Asia/Jakarta')->diffInMinutes($checkInTime);
+                $durationInMinutes = now('Asia/Jakarta')->diffInMinutes($checkInTime, true);
                 
                 $minHours = (int) Setting::getValue('minimum_work_hours', 8);
                 $minMinutes = $minHours * 60;

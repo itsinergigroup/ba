@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div
-                class="{{ auth()->user()->isBa() ? ($isDayOffToday ? 'bg-green-600' : ($hasCheckedInToday ? 'bg-blue-600' : 'bg-red-600')) : 'bg-indigo-600' }} rounded-lg shadow-lg p-6 mb-4 text-white transition-colors duration-500">
+                class="{{ auth()->user()->isBa() ? ($isDayOffToday ? 'bg-green-600' : ($hasCheckedOutToday ? 'bg-emerald-600' : ($hasCheckedInToday ? 'bg-blue-600' : 'bg-red-600'))) : 'bg-indigo-600' }} rounded-lg shadow-lg p-6 mb-4 text-white transition-colors duration-500">
                 <h3 class="text-lg font-bold opacity-80 uppercase tracking-wider">Selamat Datang,</h3>
                 <p class="text-3xl font-extrabold">{{ auth()->user()->name }}</p>
                 
@@ -29,7 +29,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                RBS (Atasan): <strong>{{ $rbsName }}</strong>
+                                Atasan: <strong>{{ $rbsName }}</strong>
                             </span>
                         </p>
                     @endif
@@ -73,6 +73,16 @@
                                     clip-rule="evenodd" />
                             </svg>
                             Belum Check-In
+                        </div>
+                    @elseif ($hasCheckedOutToday)
+                        <div
+                            class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white text-emerald-600 uppercase tracking-wider">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Sudah Check-Out (Shift Selesai)
                         </div>
                     @else
                         <div
@@ -131,21 +141,43 @@
                         </div>
                     </div>
                 @else
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-lg shadow-md">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-blue-800 font-bold">Status: Sudah Absen</h3>
-                                <p class="text-blue-700">Terima kasih, Anda telah melakukan check-in hari ini. Selamat bekerja!
-                                </p>
+                    @if ($hasCheckedOutToday)
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 mb-8 rounded-r-lg shadow-md">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-emerald-800 font-bold">Shift Selesai, Kerja Bagus!</h3>
+                                    <p class="text-emerald-700">Terima kasih atas kerja keras Anda hari ini. Selamat beristirahat!</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @else
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-lg shadow-md">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-blue-800 font-bold">Status: Sudah Absen</h3>
+                                    <p class="text-blue-700">Terima kasih, Anda telah melakukan check-in hari ini. Selamat bekerja!
+                                        Silakan melakukan
+                                        <a href="{{ route('attendance.create') }}"
+                                            class="font-bold underline hover:text-blue-900 transition-colors">
+                                            check-out di sini
+                                        </a> jika shift kerja Anda telah selesai.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 @endif
             @endif
 
@@ -196,39 +228,34 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <!-- Stat Card 1 -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 flex items-center gap-4">
-                    <div class="p-3 bg-green-50 dark:bg-green-900/30 rounded-xl text-green-600 dark:text-green-400">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                            {{ auth()->user()->isAdmin() ? 'Total Laporan Seluruh BA' : 'Total Laporan Saya' }}
-                        </h3>
-                        <p class="text-3xl font-black text-gray-900 dark:text-white mt-1">
-                            {{ number_format($stats['total_reports_month']) }}
-                            <span class="text-xs font-medium text-gray-400 ml-1">Laporan</span>
-                        </p>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Stat Card: Total BA Aktif -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border-l-4 border-indigo-500">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total BA Aktif</h3>
+                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ $stats['total_ba_active'] }}</p>
                 </div>
+                <!-- Stat Card: Total Laporan -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Laporan (Filtered)</h3>
+                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+                        {{ number_format($stats['total_reports']) }}
+                    </p>
+                </div>
+                <!-- Stat Card: Total Sell Out -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border-l-4 border-orange-500">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Sell Out</h3>
+                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">Rp
+                        {{ number_format($stats['total_sell_out']) }}
+                    </p>
+                </div>
+            </div>
 
-                <!-- Stat Card 2 -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 flex items-center gap-4">
-                    <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                            {{ auth()->user()->isAdmin() ? 'Total Sell Out Seluruh BA' : 'Total Sell Out Saya' }}
-                        </h3>
-                        <p class="text-3xl font-black text-gray-900 dark:text-white mt-1">
-                            <span class="text-sm font-bold text-blue-600 mr-0.5">Rp</span>{{ number_format($stats['total_sell_out_month']) }}
-                        </p>
+            <!-- Sales Chart -->
+            <div class="mb-8 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-100 dark:border-gray-700">
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-4">Tren Penjualan Bulanan ({{ date('Y') }})</h3>
+                    <div class="relative w-full" style="height: 300px;">
+                        <canvas id="salesChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -279,4 +306,75 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const data = @json($chart_data);
+            const labels = @json($chart_labels);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Penjualan (Rp)',
+                        data: data,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#4f46e5',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.1)'
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return 'Rp ' + (value >= 1000000 ? (value / 1000000).toFixed(1) + 'jt' : value.toLocaleString('id-ID'));
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    @endpush
 </x-app-layout>

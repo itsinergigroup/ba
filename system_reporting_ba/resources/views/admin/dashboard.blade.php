@@ -80,38 +80,6 @@
                 </div>
             </div>
 
-            <!-- Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border-l-4 border-indigo-500">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total BA
-                        Aktif</h3>
-                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ $stats['total_ba_active'] }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border-l-4 border-green-500">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total
-                        Laporan (Filtered)</h3>
-                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
-                        {{ number_format($stats['total_reports']) }}
-                    </p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border-l-4 border-orange-500">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Sell
-                        Out</h3>
-                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">Rp
-                        {{ number_format($stats['total_sell_out']) }}
-                    </p>
-                </div>
-            </div>
-
-            <!-- Sales Chart -->
-            <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-lg font-bold mb-4">Tren Penjualan Bulanan ({{ date('Y') }})</h3>
-                    <div class="relative w-full" style="height: 300px;">
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                </div>
-            </div>
 
             <!-- Riwayat Penjualan Section -->
             <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -329,73 +297,6 @@
                 }
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const ctx = document.getElementById('salesChart').getContext('2d');
-                const data = @json($chart_data);
-                const labels = @json($chart_labels);
 
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Total Penjualan (Rp)',
-                            data: data,
-                            borderColor: '#4f46e5',
-                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                            borderWidth: 3,
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: '#4f46e5',
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        if (context.parsed.y !== null) {
-                                            label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(context.parsed.y);
-                                        }
-                                        return label;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(156, 163, 175, 0.1)'
-                                },
-                                ticks: {
-                                    callback: function (value) {
-                                        return 'Rp ' + (value >= 1000000 ? (value / 1000000).toFixed(1) + 'jt' : value.toLocaleString('id-ID'));
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            });
-        </script>
     @endpush
 </x-app-layout>

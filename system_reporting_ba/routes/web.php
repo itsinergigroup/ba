@@ -12,7 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     // BA & Viewer Specific Routes
-    Route::middleware(['role:admin,ba,rbs,view user only'])->group(function () {
+    Route::middleware(['role:admin,ba,rbs,kam,view user only'])->group(function () {
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [\App\Http\Controllers\ReportController::class, 'export'])->name('reports.export');
         
@@ -70,6 +70,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return $brand->products()->orderBy('name')->get();
     });
 
+    // Admin, RBS, KAM Specific Routes
+    Route::middleware(['role:admin,rbs,kam'])->prefix('admin')->name('admin.')->group(function () {
+        // Attendance Logs
+        Route::get('/attendance', [\App\Http\Controllers\AttendanceController::class, 'adminIndex'])->name('attendance.index');
+        Route::get('/attendance/export', [\App\Http\Controllers\AttendanceController::class, 'adminExport'])->name('attendance.export');
+        Route::get('/attendance/{attendance}', [\App\Http\Controllers\AttendanceController::class, 'adminShow'])->name('attendance.show');
+    });
+
     // Admin Specific Routes
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
@@ -87,11 +95,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // User Management
         Route::patch('users/{user}/toggle', [\App\Http\Controllers\Admin\UserController::class, 'toggle'])->name('users.toggle');
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
-
-        // Attendance Logs
-        Route::get('/attendance', [\App\Http\Controllers\AttendanceController::class, 'adminIndex'])->name('attendance.index');
-        Route::get('/attendance/export', [\App\Http\Controllers\AttendanceController::class, 'adminExport'])->name('attendance.export');
-        Route::get('/attendance/{attendance}', [\App\Http\Controllers\AttendanceController::class, 'adminShow'])->name('attendance.show');
 
         // Attendance Request Management
         Route::get('/attendance-requests', [\App\Http\Controllers\AttendanceRequestController::class, 'adminIndex'])->name('attendance-requests.index');

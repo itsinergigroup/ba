@@ -66,6 +66,7 @@
                                 <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                                     <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Brand</th>
                                     <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Nama Produk</th>
+                                    <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Barcode</th>
                                     <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">HET</th>
 
                                     <th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Aksi</th>
@@ -76,6 +77,16 @@
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                                         <td class="py-3 px-4 font-bold text-sm">{{ $product->brand->name }}</td>
                                         <td class="py-3 px-4 text-sm">{{ $product->name }}</td>
+                                        <td class="py-3 px-4 text-sm font-mono text-gray-600 dark:text-gray-400">
+                                            @if($product->barcode)
+                                                <div class="flex flex-col gap-1 items-start">
+                                                    <svg class="barcode-render" data-value="{{ $product->barcode }}"></svg>
+                                                    <span class="text-xs text-gray-500">{{ $product->barcode }}</span>
+                                                </div>
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
                                         <td class="py-3 px-4 text-right text-sm">Rp {{ number_format($product->het) }}</td>
 
                                         <td class="py-3 px-4 text-right">
@@ -93,7 +104,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="py-12 text-center text-gray-500 dark:text-gray-400 italic">
+                                        <td colspan="5" class="py-12 text-center text-gray-500 dark:text-gray-400 italic">
                                             Data produk tidak ditemukan.
                                         </td>
                                     </tr>
@@ -110,4 +121,28 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.barcode-render').forEach(function (svg) {
+                    const val = svg.getAttribute('data-value');
+                    try {
+                        JsBarcode(svg, val, {
+                            format: "CODE128",
+                            lineColor: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937',
+                            background: 'transparent',
+                            displayValue: false,
+                            height: 30,
+                            width: 1.2,
+                            margin: 0
+                        });
+                    } catch (e) {
+                        console.error("Gagal merender barcode: " + val, e);
+                    }
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>

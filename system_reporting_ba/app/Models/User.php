@@ -63,7 +63,12 @@ class User extends Authenticatable
 
     public function isRbs(): bool
     {
-        return $this->role === 'rbs';
+        return in_array($this->role, ['rbs', 'kam']);
+    }
+
+    public function isKam(): bool
+    {
+        return $this->role === 'kam';
     }
 
     public function isViewOnly(): bool
@@ -73,7 +78,7 @@ class User extends Authenticatable
 
     public function isAnyViewer(): bool
     {
-        return in_array($this->role, ['admin', 'rbs', 'view user only']);
+        return in_array($this->role, ['admin', 'rbs', 'kam', 'view user only']);
     }
 
     public function distributor()
